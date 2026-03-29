@@ -3,27 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Miran Lingo - İngilizce Öğren</title>
+    <title>MiranLingo Pro</title>
     <style>
         :root {
             --primary: #58cc02;
             --primary-dark: #46a302;
-            --secondary: #1cb0f6;
-            --error: #ff4b4b;
+            --bg: #ffffff;
             --text: #4b4b4b;
+            --card-bg: #ffffff;
+        }
+
+        .dark-mode {
+            --bg: #131f24;
+            --text: #eeeeee;
+            --card-bg: #202f36;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
             margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            color: var(--text);
+            transition: 0.3s;
         }
 
-        /* Giriş Ekranı */
         #auth-screen, #main-menu, #game-screen {
             width: 100%;
             max-width: 400px;
@@ -36,49 +42,44 @@
             background-color: var(--primary);
             color: white;
             border: none;
-            padding: 15px 30px;
+            padding: 15px;
             border-radius: 15px;
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 5px 0 var(--primary-dark);
-            transition: all 0.1s;
-            width: 80%;
-            font-size: 18px;
+            width: 85%;
+            margin: 10px;
         }
 
-        .btn:active {
-            transform: translateY(4px);
-            box-shadow: 0 1px 0 var(--primary-dark);
+        .card {
+            background: var(--card-bg);
+            border: 3px solid #e5e5e5;
+            border-radius: 20px;
+            padding: 40px 10px;
+            margin: 20px 0;
+            font-size: 35px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
         }
+
+        .card:active { transform: scale(0.95); }
 
         input {
             padding: 15px;
             border: 2px solid #e5e5e5;
             border-radius: 15px;
             width: 80%;
-            margin-bottom: 20px;
-            font-size: 16px;
+            margin-bottom: 10px;
+            background: var(--card-bg);
+            color: var(--text);
         }
 
-        /* Kart Yapısı */
-        .card {
-            background: white;
-            border: 2px solid #e5e5e5;
-            border-radius: 20px;
-            padding: 40px 20px;
-            margin: 20px 0;
-            font-size: 32px;
-            font-weight: bold;
-            box-shadow: 0 4px 0 #e5e5e5;
-        }
-
-        /* Progress Bar */
         .progress-container {
             width: 100%;
             background: #e5e5e5;
-            height: 15px;
+            height: 12px;
             border-radius: 10px;
-            margin: 20px 0;
         }
 
         #progress-bar {
@@ -86,87 +87,88 @@
             height: 100%;
             background: var(--primary);
             border-radius: 10px;
-            transition: width 0.3s;
         }
 
-        /* Öneri Kutusu */
-        .suggestion-box {
-            margin-top: 50px;
-            border-top: 2px solid #eee;
-            padding-top: 20px;
-            width: 100%;
-        }
-
-        #suggestion-list {
-            text-align: left;
-            background: #f7f7f7;
-            padding: 10px;
-            border-radius: 10px;
-            max-height: 100px;
-            overflow-y: auto;
+        .theme-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 24px;
         }
 
         .hidden { display: none; }
     </style>
 </head>
-<body>
+<body class="">
+
+    <div class="theme-toggle" onclick="toggleTheme()">🌓</div>
 
     <div id="auth-screen">
         <h1 style="color: var(--primary)">MiranLingo</h1>
-        <p>Hoş geldin! Adın nedir?</p>
-        <input type="text" id="username-input" placeholder="Kullanıcı adın...">
-        <button class="btn" onclick="login()">Devam Et</button>
+        <input type="text" id="username-input" placeholder="Adını yaz...">
+        <button class="btn" onclick="login()">BAŞLA</button>
     </div>
 
     <div id="main-menu" class="hidden">
-        <h2 id="welcome-text">Selam!</h2>
-        <button class="btn" style="background-color: var(--secondary); box-shadow: 0 5px 0 #1899d6;" onclick="startGame()">İNGİLİZCEYE BAŞLA</button>
-        
-        <div class="suggestion-box">
-            <h4>Öneri Gönder</h4>
-            <input type="text" id="suggestion-input" placeholder="Bir kelime öner..." style="width: 70%;">
-            <button class="btn" style="width: 20%; padding: 10px;" onclick="addSuggestion()">+</button>
-            <div id="suggestion-list"></div>
-        </div>
+        <h2 id="welcome-text"></h2>
+        <button class="btn" onclick="startGame()">İNGİLİZCEYE BAŞLA</button>
+        <div id="suggestion-list" style="margin-top:20px; font-size: 12px; opacity: 0.7;"></div>
     </div>
 
     <div id="game-screen" class="hidden">
-        <div class="progress-container">
-            <div id="progress-bar"></div>
-        </div>
-        <p>Bu kelimenin anlamı nedir?</p>
-        <div class="card" id="word-card">Apple</div>
-        <input type="text" id="answer-input" placeholder="Cevabını yaz...">
-        <button class="btn" onclick="checkAnswer()">Kontrol Et</button>
+        <div class="progress-container"><div id="progress-bar"></div></div>
+        <p id="score-text">Puan: 0</p>
+        <div class="card" id="word-card" onclick="showHint()">Kelime</div>
+        <p style="font-size: 12px; opacity: 0.6;">(Bilemezsen karta tıkla!)</p>
+        <input type="text" id="answer-input" placeholder="Türkçesini yaz...">
+        <button class="btn" onclick="checkAnswer()">KONTROL ET</button>
         <p id="feedback"></p>
     </div>
 
     <script>
-        let currentUser = "";
-        let currentWordIndex = 0;
-        let score = 0;
-
-        // 100 Kelimelik Liste (Örnek başlangıç)
-        const words = [
-            { en: "Apple", tr: "elma" },
-            { en: "Computer", tr: "bilgisayar" },
-            { en: "Game", tr: "oyun" },
-            { en: "Future", tr: "gelecek" },
-            { en: "Success", tr: "başarı" }
-            // Buraya 100 kelimeye kadar ekleme yapabilirsin
+        let words = [
+            { en: "Table", tr: "masa" }, { en: "Chair", tr: "sandalye" }, { en: "Water", tr: "su" },
+            { en: "School", tr: "okul" }, { en: "Book", tr: "kitap" }, { en: "Pen", tr: "kalem" },
+            { en: "Dog", tr: "köpek" }, { en: "Cat", tr: "kedi" }, { en: "House", tr: "ev" },
+            { en: "Sky", tr: "gökyüzü" }, { en: "Bread", tr: "ekmek" }, { en: "Milk", tr: "süt" },
+            { en: "Friend", tr: "arkadaş" }, { en: "Family", tr: "aile" }, { en: "City", tr: "şehir" },
+            { en: "Car", tr: "araba" }, { en: "Watch", tr: "saat" }, { en: "Tree", tr: "ağaç" },
+            { en: "Mountain", tr: "dağ" }, { en: "Sea", tr: "deniz" }
         ];
 
+        let currentWordIndex = 0;
+        let score = 0;
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(freq) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.value = freq;
+            osc.start();
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
+            osc.stop(audioCtx.currentTime + 0.5);
+        }
+
         function login() {
-            currentUser = document.getElementById("username-input").value;
-            if(currentUser) {
+            const name = document.getElementById("username-input").value;
+            if(name) {
                 document.getElementById("auth-screen").classList.add("hidden");
                 document.getElementById("main-menu").classList.remove("hidden");
-                document.getElementById("welcome-text").innerText = `Selam ${currentUser}, Hazır mısın?`;
-                loadSuggestions();
+                document.getElementById("welcome-text").innerText = `Selam ${name}!`;
             }
         }
 
+        function toggleTheme() {
+            document.body.classList.toggle("dark-mode");
+        }
+
         function startGame() {
+            words.sort(() => Math.random() - 0.5); // Karıştırma Özelliği
+            currentWordIndex = 0;
+            score = 0;
             document.getElementById("main-menu").classList.add("hidden");
             document.getElementById("game-screen").classList.remove("hidden");
             showWord();
@@ -174,46 +176,39 @@
 
         function showWord() {
             document.getElementById("word-card").innerText = words[currentWordIndex].en;
+            document.getElementById("word-card").style.color = "var(--text)";
             document.getElementById("answer-input").value = "";
-            let progress = (currentWordIndex / words.length) * 100;
-            document.getElementById("progress-bar").style.width = progress + "%";
+            document.getElementById("feedback").innerText = "";
+            updateProgress();
+        }
+
+        function showHint() {
+            document.getElementById("word-card").innerText = words[currentWordIndex].tr;
+            document.getElementById("word-card").style.color = "#1cb0f6";
         }
 
         function checkAnswer() {
-            let userAns = document.getElementById("answer-input").value.toLowerCase().trim();
-            let correctAns = words[currentWordIndex].tr.toLowerCase();
-
-            if(userAns === correctAns) {
-                currentWordIndex++;
+            let ans = document.getElementById("answer-input").value.toLowerCase().trim();
+            if(ans === words[currentWordIndex].tr.toLowerCase()) {
+                playSound(800);
                 score += 10;
-                document.getElementById("feedback").innerText = "Harika! +10 Puan";
-                document.getElementById("feedback").style.color = "green";
-                
+                document.getElementById("score-text").innerText = "Puan: " + score;
+                document.getElementById("feedback").innerText = "Mükemmel! ✨";
+                currentWordIndex++;
                 if(currentWordIndex < words.length) {
-                    setTimeout(showWord, 1000);
+                    setTimeout(showWord, 800);
                 } else {
-                    alert("Tebrikler! Tüm kelimeleri bitirdin. Toplam Puan: " + score);
+                    alert("Harikasın! Hepsini bitirdin.");
                 }
             } else {
-                document.getElementById("feedback").innerText = "Tekrar dene!";
-                document.getElementById("feedback").style.color = "red";
+                playSound(200);
+                document.getElementById("feedback").innerText = "Yanlış! Karta tıklayıp kopya çekebilirsin.";
             }
         }
 
-        function addSuggestion() {
-            let sug = document.getElementById("suggestion-input").value;
-            if(sug) {
-                let list = JSON.parse(localStorage.getItem("suggestions") || "[]");
-                list.push(`${currentUser}: ${sug}`);
-                localStorage.setItem("suggestions", JSON.stringify(list));
-                document.getElementById("suggestion-input").value = "";
-                loadSuggestions();
-            }
-        }
-
-        function loadSuggestions() {
-            let list = JSON.parse(localStorage.getItem("suggestions") || "[]");
-            document.getElementById("suggestion-list").innerHTML = list.map(s => `<p>${s}</p>`).join("");
+        function updateProgress() {
+            let p = (currentWordIndex / words.length) * 100;
+            document.getElementById("progress-bar").style.width = p + "%";
         }
     </script>
 </body>
