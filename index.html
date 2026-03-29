@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MiranLingo Ultra</title>
+    <title>MiranLingo Quiz</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
         :root {
@@ -11,212 +11,167 @@
             --blue: #1cb0f6;
             --red: #ff4b4b;
             --gray: #afafaf;
+            --bg: #ffffff;
         }
 
-        body {
-            font-family: sans-serif;
-            margin: 0;
-            background: #fff;
-            display: flex;
-            justify-content: center;
-            user-select: none;
+        body { font-family: sans-serif; margin: 0; background: var(--bg); display: flex; justify-content: center; }
+        .app { width: 100%; max-width: 400px; height: 100vh; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; }
+
+        .stats { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 10px; font-size: 18px; }
+        
+        .timer-bg { width: 100%; height: 8px; background: #eee; border-radius: 10px; margin-bottom: 20px; }
+        #timer-fill { width: 100%; height: 100%; background: var(--blue); border-radius: 10px; transition: width 0.1s linear; }
+
+        .word-card { 
+            border: 2px solid #e5e5e5; border-bottom: 6px solid #e5e5e5; border-radius: 15px; 
+            padding: 40px 10px; text-align: center; font-size: 32px; font-weight: bold; color: #333; margin-bottom: 30px;
         }
 
-        .app {
-            width: 100%;
-            max-width: 400px;
-            height: 100vh;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            box-sizing: border-box;
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .opt-btn { 
+            background: white; border: 2px solid #e5e5e5; border-bottom: 4px solid #e5e5e5; 
+            border-radius: 12px; padding: 15px 5px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;
         }
-
-        /* Üst Panel: Can, Puan, Seri */
-        .stats {
-            display: flex;
-            justify-content: space-between;
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .progress-bg {
-            width: 100%;
-            height: 12px;
-            background: #e5e5e5;
-            border-radius: 10px;
-            margin-bottom: 30px;
-        }
-
-        #progress-fill {
-            width: 0%;
-            height: 100%;
-            background: var(--green);
-            border-radius: 10px;
-            transition: 0.3s;
-        }
-
-        /* Kelime Kartı */
-        .word-card {
-            border: 2px solid #e5e5e5;
-            border-bottom: 6px solid #e5e5e5;
-            border-radius: 15px;
-            padding: 50px 20px;
-            text-align: center;
-            font-size: 36px;
-            font-weight: bold;
-            color: var(--blue);
-            margin-bottom: 20px;
-            cursor: pointer;
-        }
-
-        .word-card:active { transform: scale(0.98); }
-
-        /* Giriş ve Butonlar */
-        input {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e5e5e5;
-            border-radius: 12px;
-            font-size: 18px;
-            box-sizing: border-box;
-            margin-bottom: 15px;
-        }
-
-        .main-btn {
-            background: var(--green);
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: bold;
-            box-shadow: 0 5px 0 #46a302;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        .main-btn:active {
-            transform: translateY(3px);
-            box-shadow: 0 2px 0 #46a302;
-        }
+        .opt-btn:active { transform: translateY(2px); }
+        .correct { background: var(--green) !important; color: white !important; border-color: #46a302 !important; }
+        .wrong { background: var(--red) !important; color: white !important; border-color: #c0392b !important; }
 
         .hidden { display: none; }
-
-        /* Yanlış yapınca sallanma */
-        .shake { animation: shakeAnim 0.3s; border-color: var(--red); }
-        @keyframes shakeAnim {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-8px); }
-            75% { transform: translateX(8px); }
-        }
+        .main-btn { background: var(--green); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 5px 0 #46a302; }
     </style>
 </head>
 <body>
 
 <div class="app">
-    <div id="login-screen">
-        <h1 style="color: var(--green); text-align: center;">MiranLingo</h1>
-        <p style="text-align: center; color: var(--gray);">Hoş geldin! LGS İngilizce'ye hazır mısın?</p>
-        <input type="text" id="name-in" placeholder="Adını yaz...">
-        <button class="main-btn" onclick="startApp()">HAYDİ BAŞLA!</button>
+    <div id="start-screen">
+        <h1 style="color: var(--green); text-align: center;">MiranLingo Quiz</h1>
+        <p style="text-align: center; color: var(--gray);">40+ Yeni Kelime ile Teste Başla!</p>
+        <div style="text-align: center; margin-bottom: 20px; font-weight: bold;">En Yüksek Skor: <span id="high-score">0</span></div>
+        <button class="main-btn" onclick="startQuiz()">BAŞLA</button>
     </div>
 
-    <div id="game-screen" class="hidden">
+    <div id="quiz-screen" class="hidden">
         <div class="stats">
-            <span style="color: var(--red);">❤️ <span id="lives">3</span></span>
             <span style="color: orange;">🔥 <span id="streak">0</span></span>
             <span style="color: var(--blue);">💎 <span id="score">0</span></span>
         </div>
-        <div class="progress-bg"><div id="progress-fill"></div></div>
+        <div class="timer-bg"><div id="timer-fill"></div></div>
 
-        <div class="word-card" id="q-text" onclick="hear()">Word</div>
-        <p style="text-align:center; font-size:12px; color:var(--gray);">Dinlemek için karta dokun!</p>
+        <div class="word-card" id="q-word">Word</div>
 
-        <input type="text" id="ans-in" placeholder="Türkçe anlamı..." autocomplete="off">
-        <button class="main-btn" onclick="check()">KONTROL ET</button>
-        <p id="msg" style="text-align: center; font-weight: bold; margin-top: 15px;"></p>
+        <div class="options-grid" id="options">
+            <button class="opt-btn" onclick="check(0)">A</button>
+            <button class="opt-btn" onclick="check(1)">B</button>
+            <button class="opt-btn" onclick="check(2)">C</button>
+            <button class="opt-btn" onclick="check(3)">D</button>
+        </div>
     </div>
 </div>
 
 <script>
-    // LGS 1. Ünite Kelimeleri (Genişletilmiş ve Karışık)
-    const allWords = [
+    const wordList = [
         {en: "Honest", tr: "dürüst"}, {en: "Generous", tr: "cömert"}, {en: "Reliable", tr: "güvenilir"},
-        {en: "Adventurous", tr: "maceracı"}, {en: "Stubborn", tr: "inatçı"}, {en: "Back up", tr: "desteklemek"},
-        {en: "Count on", tr: "güvenmek"}, {en: "Get on well", tr: "iyi geçinmek"}, {en: "Awesome", tr: "harika"},
-        {en: "Refuse", tr: "reddetmek"}, {en: "Accept", tr: "kabul etmek"}, {en: "Invite", tr: "davet etmek"},
-        {en: "Loyal", tr: "sadık"}, {en: "Tactful", tr: "nazik"}, {en: "Sneaky", tr: "sinsi"},
-        {en: "Selfish", tr: "bencil"}, {en: "Arrogant", tr: "kibirli"}, {en: "Buddy", tr: "kanka"},
-        {en: "Amusing", tr: "eğlenceli"}, {en: "Fair", tr: "adil"}
+        {en: "Stubborn", tr: "inatçı"}, {en: "Adventurous", tr: "maceracı"}, {en: "Amusing", tr: "eğlenceli"},
+        {en: "Arrogant", tr: "kibirli"}, {en: "Selfish", tr: "bencil"}, {en: "Sneaky", tr: "sinsi"},
+        {en: "Loyal", tr: "sadık"}, {en: "Tactful", tr: "nazik"}, {en: "Fair", tr: "adil"},
+        {en: "Buddy", tr: "kanka"}, {en: "Back up", tr: "desteklemek"}, {en: "Count on", tr: "güvenmek"},
+        {en: "Get on well", tr: "iyi geçinmek"}, {en: "Accept", tr: "kabul etmek"}, {en: "Refuse", tr: "reddetmek"},
+        {en: "Invite", tr: "davet etmek"}, {en: "Stranger", tr: "yabancı"}, {en: "Awesome", tr: "harika"},
+        {en: "Exhibition", tr: "sergi"}, {en: "Tournament", tr: "turnuva"}, {en: "Fee", tr: "ücret"},
+        {en: "Reunion", tr: "yeniden buluşma"}, {en: "Calm", tr: "sakin"}, {en: "Cool", tr: "havalı"},
+        {en: "Exciting", tr: "heyecan verici"}, {en: "Fashionable", tr: "modaya uygun"}, {en: "Terrific", tr: "müthiş"},
+        {en: "Unbearable", tr: "katlanılmaz"}, {en: "Healthy", tr: "sağlıklı"}, {en: "Casual", tr: "günlük"},
+        {en: "Impressive", tr: "etkileyici"}, {en: "Trendy", tr: "trend"}, {en: "Skilled", tr: "yetenekli"},
+        {en: "Harmful", tr: "zararlı"}, {en: "Ridiculous", tr: "saçma"}, {en: "Serious", tr: "ciddi"},
+        {en: "Success", tr: "başarı"}, {en: "Goal", tr: "hedef"}, {en: "Dream", tr: "hayal"},
+        {en: "Lazy", tr: "tembel"}, {en: "Punctual", tr: "dakik"}
     ];
 
     let current = 0;
     let score = 0;
-    let lives = 3;
     let streak = 0;
+    let timeLeft = 100;
+    let timerInterval;
 
-    function startApp() {
-        if(!document.getElementById('name-in').value) return alert("Lütfen adını yaz!");
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('game-screen').classList.remove('hidden');
-        allWords.sort(() => Math.random() - 0.5); // Karıştır
-        nextWord();
+    document.getElementById('high-score').innerText = localStorage.getItem('miranHigh') || 0;
+
+    function startQuiz() {
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+        wordList.sort(() => Math.random() - 0.5);
+        nextQuestion();
     }
 
-    function nextWord() {
-        if(current >= allWords.length) {
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-            alert("TEBRİKLER! Üniteyi bitirdin. Skorun: " + score);
-            location.reload();
-            return;
+    function nextQuestion() {
+        if (current >= wordList.length) { finish(); return; }
+        
+        clearInterval(timerInterval);
+        timeLeft = 100;
+        startTimer();
+
+        const correctObj = wordList[current];
+        document.getElementById('q-word').innerText = correctObj.en;
+
+        // Yanlış şıkları üret
+        let options = [correctObj.tr];
+        while(options.length < 4) {
+            let rand = wordList[Math.floor(Math.random()*wordList.length)].tr;
+            if(!options.includes(rand)) options.push(rand);
         }
-        const card = document.getElementById('q-text');
-        card.innerText = allWords[current].en;
-        card.style.color = "var(--blue)";
-        card.classList.remove('shake');
-        document.getElementById('ans-in').value = "";
-        document.getElementById('msg').innerText = "";
-        document.getElementById('progress-fill').style.width = (current / allWords.length) * 100 + "%";
+        options.sort(() => Math.random() - 0.5);
+
+        const btnContainer = document.getElementById('options');
+        btnContainer.innerHTML = '';
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'opt-btn';
+            btn.innerText = opt;
+            btn.onclick = () => check(btn, opt === correctObj.tr);
+            btnContainer.appendChild(btn);
+        });
     }
 
-    function check() {
-        let user = document.getElementById('ans-in').value.toLowerCase().trim();
-        let correct = allWords[current].tr.toLowerCase();
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            timeLeft -= 1.5;
+            document.getElementById('timer-fill').style.width = timeLeft + "%";
+            if(timeLeft <= 0) {
+                clearInterval(timerInterval);
+                current++;
+                nextQuestion();
+            }
+        }, 100);
+    }
 
-        if(user === correct) {
+    function check(btn, isCorrect) {
+        clearInterval(timerInterval);
+        const allBtns = document.querySelectorAll('.opt-btn');
+        allBtns.forEach(b => b.style.pointerEvents = 'none');
+
+        if(isCorrect) {
+            btn.classList.add('correct');
             score += 10 + (streak * 2);
             streak++;
-            current++;
-            document.getElementById('score').innerText = score;
-            document.getElementById('streak').innerText = streak;
-            document.getElementById('msg').innerText = "Harika! ✨";
-            document.getElementById('msg').style.color = "var(--green)";
-            confetti({ particleCount: 40, spread: 60 });
-            setTimeout(nextWord, 1000);
+            confetti({ particleCount: 30, spread: 50 });
         } else {
-            lives--;
+            btn.classList.add('wrong');
             streak = 0;
-            document.getElementById('lives').innerText = lives;
-            document.getElementById('streak').innerText = streak;
-            document.getElementById('q-text').classList.add('shake');
-            document.getElementById('msg').innerText = "Yanlış! Doğrusu: " + allWords[current].tr;
-            document.getElementById('msg').style.color = "var(--red)";
-
-            if(lives <= 0) {
-                alert("Canın bitti! Tekrar dene.");
-                location.reload();
-            }
+            allBtns.forEach(b => { if(b.innerText === wordList[current].tr) b.classList.add('correct'); });
         }
+
+        document.getElementById('score').innerText = score;
+        document.getElementById('streak').innerText = streak;
+        
+        current++;
+        setTimeout(nextQuestion, 800);
     }
 
-    function hear() {
-        let speech = new SpeechSynthesisUtterance(allWords[current].en);
-        speech.lang = 'en-US';
-        window.speechSynthesis.speak(speech);
+    function finish() {
+        let high = localStorage.getItem('miranHigh') || 0;
+        if(score > high) localStorage.setItem('miranHigh', score);
+        alert("Oyun Bitti! Skorun: " + score);
+        location.reload();
     }
 </script>
-
 </body>
 </html>
