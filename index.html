@@ -3,197 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MiranLingo Pro Max</title>
+    <title>MiranLingo V6 - Ultra</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
         :root {
-            --primary: #58cc02; --primary-dark: #46a302;
-            --blue: #1cb0f6; --blue-dark: #1899d6;
-            --red: #ff4b4b; --text: #4b4b4b;
-            --gray: #e5e5e5;
+            --primary: #58cc02; --blue: #1cb0f6; --red: #ff4b4b; --gray: #e5e5e5;
         }
-
         body { 
-            font-family: 'Segoe UI', Tahoma, sans-serif; 
-            margin: 0; background: #fff; overflow: hidden;
-            display: flex; justify-content: center;
+            font-family: 'Segoe UI', sans-serif; margin: 0; background: #fff; 
+            display: flex; justify-content: center; height: 100vh; overflow: hidden;
         }
-
-        .app-container {
-            width: 100%; max-width: 414px; height: 100vh;
-            display: flex; flex-direction: column; padding: 20px; box-sizing: border-box;
-        }
-
-        /* Üst Bar */
-        .top-bar { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
-        .progress-container { flex-grow: 1; height: 16px; background: var(--gray); border-radius: 10px; overflow: hidden; }
-        #progress-fill { width: 0%; height: 100%; background: var(--primary); transition: 0.4s; }
-
-        /* Soru Kartı */
-        .quiz-box { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        .character-icon { font-size: 50px; margin-bottom: 10px; animation: bounce 2s infinite; }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .app { width: 100%; max-width: 414px; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; }
         
-        .question-card {
-            background: white; border: 2px solid var(--gray); border-radius: 20px;
-            padding: 30px; width: 100%; box-sizing: border-box; position: relative;
-            margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        /* Progress & Stats */
+        .top-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+        .bar-bg { flex-grow: 1; height: 14px; background: var(--gray); border-radius: 10px; overflow: hidden; }
+        #bar-fill { width: 0%; height: 100%; background: var(--primary); transition: 0.5s; }
+        
+        /* Card Style */
+        .card {
+            background: white; border: 2px solid var(--gray); border-bottom: 6px solid var(--gray);
+            border-radius: 25px; padding: 40px 20px; text-align: center; margin-bottom: 20px;
+            animation: slideIn 0.4s ease-out; position: relative;
         }
-        .question-word { font-size: 32px; font-weight: 900; color: #3c3c3c; margin: 0; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .q-word { font-size: 36px; font-weight: 900; color: #3c3c3c; margin: 0; }
+        .speaker-icon { font-size: 24px; cursor: pointer; color: var(--blue); margin-top: 10px; display: block; }
 
-        /* Şıklar */
-        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
-        .option-btn {
+        /* Options */
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .opt {
             background: white; border: 2px solid var(--gray); border-bottom: 5px solid var(--gray);
-            border-radius: 15px; padding: 18px 10px; font-size: 16px; font-weight: bold;
-            color: var(--text); cursor: pointer; transition: 0.1s;
+            border-radius: 18px; padding: 18px 5px; font-size: 16px; font-weight: bold;
+            cursor: pointer; transition: 0.1s;
         }
-        .option-btn:active { transform: translateY(3px); border-bottom-width: 2px; }
-        .option-btn.correct { background: #d7ffb8; border-color: var(--primary); color: var(--primary-dark); }
-        .option-btn.wrong { background: #ffdfe0; border-color: var(--red); color: var(--red); }
+        .opt:active { transform: translateY(3px); border-bottom-width: 2px; }
+        .correct { background: #d7ffb8 !important; border-color: var(--primary) !important; color: #46a302 !important; }
+        .wrong { background: #ffdfe0 !important; border-color: var(--red) !important; color: var(--red) !important; }
 
-        /* Alt Mesaj Paneli */
-        #feedback-panel {
-            position: fixed; bottom: -150px; left: 0; right: 0; height: 120px;
-            transition: 0.3s; padding: 20px; display: flex; flex-direction: column; align-items: center;
+        /* Feedback Panel */
+        #footer-panel {
+            position: fixed; bottom: -160px; left: 0; right: 0; background: #fff;
+            padding: 25px; border-top: 2px solid var(--gray); transition: 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            display: flex; flex-direction: column; align-items: center; z-index: 100;
         }
-        #feedback-panel.show { bottom: 0; }
-        .panel-green { background: #d7ffb8; color: var(--primary-dark); }
-        .panel-red { background: #ffdfe0; color: var(--red); }
+        #footer-panel.show { bottom: 0; }
+        
+        .btn {
+            background: var(--primary); color: white; border: none; padding: 15px 30px;
+            border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 5px 0 #46a302; width: 100%;
+        }
 
         .hidden { display: none !important; }
-        .main-btn {
-            background: var(--primary); color: white; border: none; padding: 15px 40px;
-            border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer;
-            box-shadow: 0 5px 0 var(--primary-dark);
-        }
+        .overlay { position: fixed; inset: 0; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; padding: 20px; text-align: center; }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    <div id="start-screen" class="quiz-box">
-        <div class="character-icon">🦉</div>
-        <h1 style="color: var(--primary); font-size: 36px; margin: 10px 0;">MiranLingo</h1>
-        <p style="color: #afafaf; font-weight: bold;">LGS İÇİN 70+ KELİME!</p>
-        <button class="main-btn" onclick="startApp()">ÖĞRENMEYE BAŞLA</button>
+<div class="app">
+    <div id="start-screen" class="overlay">
+        <h1 style="color: var(--primary); font-size: 42px;">MiranLingo</h1>
+        <p style="font-size: 20px; font-weight: bold; color: #666;">Birlikte İngilizce Öğrenelim!</p>
+        <input type="text" id="user-name" placeholder="İismin nedir?" style="padding: 15px; border: 2px solid #ddd; border-radius: 12px; width: 80%; font-size: 18px; margin-bottom: 20px;">
+        <button class="btn" onclick="initGame()" style="width: 85%;">BAŞLA 🚀</button>
     </div>
 
     <div id="game-screen" class="hidden">
-        <div class="top-bar">
-            <span onclick="location.reload()" style="cursor:pointer; font-size: 24px; color: #ccc;">✖</span>
-            <div class="progress-container"><div id="progress-fill"></div></div>
-            <span style="color: orange; font-weight: bold;">🔥 <span id="streak">0</span></span>
+        <div class="top-nav">
+            <span style="font-size: 20px; cursor: pointer;" onclick="location.reload()">✖</span>
+            <div class="bar-bg"><div id="bar-fill"></div></div>
+            <span style="color: orange; font-weight: bold;">🔥 <span id="streak-val">0</span></span>
         </div>
 
-        <div class="quiz-box">
-            <div class="question-card">
-                <p style="color: #ccc; font-size: 12px; margin-bottom: 5px;">BU KELİMENİN ANLAMI NEDİR?</p>
-                <h2 class="question-word" id="q-word">Word</h2>
+        <div id="quiz-area">
+            <div class="card">
+                <p id="welcome-msg" style="color: var(--blue); font-weight: bold; margin: 0;"></p>
+                <h2 class="q-word" id="word-display">Word</h2>
+                <span class="speaker-icon" onclick="speakText()">🔊 Tekrar Dinle</span>
             </div>
-
-            <div class="options-grid" id="opt-grid">
-                </div>
+            <div class="options" id="opt-container"></div>
         </div>
     </div>
 
-    <div id="feedback-panel">
-        <h2 id="feedback-msg" style="margin: 0;">Harika!</h2>
-        <button class="main-btn" style="margin-top: 10px; width: 100%;" id="next-btn">DEVAM ET</button>
+    <div id="footer-panel">
+        <h2 id="status-msg" style="margin: 0 0 15px 0;">Harika!</h2>
+        <button class="btn" id="continue-btn">DEVAM ET</button>
     </div>
 </div>
 
 <script>
-    const dictionary = [
-        {en: "Incredible", tr: "İnanılmaz"}, {en: "Boring", tr: "Sıkıcı"}, {en: "Generous", tr: "Cömert"},
-        {en: "Selfish", tr: "Bencil"}, {en: "Arrogant", tr: "Kibirli"}, {en: "Reliable", tr: "Güvenilir"},
-        {en: "Support", tr: "Desteklemek"}, {en: "Adventure", tr: "Macera"}, {en: "Exhibition", tr: "Sergi"},
-        {en: "Tournament", tr: "Turnuva"}, {en: "Fee", tr: "Ücret"}, {en: "Reunion", tr: "Buluşma"},
-        {en: "Calm", tr: "Sakin"}, {en: "Cool", tr: "Havalı"}, {en: "Exciting", tr: "Heyecanlı"},
-        {en: "Fashionable", tr: "Modaya uygun"}, {en: "Terrific", tr: "Müthiş"}, {en: "Unbearable", tr: "Katlanılmaz"},
-        {en: "Healthy", tr: "Sağlıklı"}, {en: "Casual", tr: "Günlük"}, {en: "Impressive", tr: "Etkileyici"},
-        {en: "Trendy", tr: "Trend"}, {en: "Skilled", tr: "Yetenekli"}, {en: "Harmful", tr: "Zararlı"},
-        {en: "Ridiculous", tr: "Saçma"}, {en: "Serious", tr: "Ciddi"}, {en: "Success", tr: "Başarı"},
+    const words = [
+        {en: "Honest", tr: "Dürüst"}, {en: "Generous", tr: "Cömert"}, {en: "Reliable", tr: "Güvenilir"},
+        {en: "Stubborn", tr: "İnatçı"}, {en: "Back up", tr: "Desteklemek"}, {en: "Success", tr: "Başarı"},
         {en: "Goal", tr: "Hedef"}, {en: "Dream", tr: "Hayal"}, {en: "Punctual", tr: "Dakik"},
-        {en: "Honest", tr: "Dürüst"}, {en: "Stubborn", tr: "İnatçı"}, {en: "Back up", tr: "Desteklemek"},
-        {en: "Count on", tr: "Güvenmek"}, {en: "Buddy", tr: "Kanka"}, {en: "Sneaky", tr: "Sinsi"}
+        {en: "Incredible", tr: "İnanılmaz"}, {en: "Boring", tr: "Sıkıcı"}, {en: "Arrogant", tr: "Kibirli"},
+        {en: "Selfish", tr: "Bencil"}, {en: "Sneaky", tr: "Sinsi"}, {en: "Adventure", tr: "Macera"},
+        {en: "Exhibition", tr: "Sergi"}, {en: "Tournament", tr: "Turnuva"}, {en: "Fee", tr: "Ücret"},
+        {en: "Reunion", tr: "Buluşma"}, {en: "Calm", tr: "Sakin"}, {en: "Cool", tr: "Havalı"},
+        {en: "Exciting", tr: "Heyecanlı"}, {en: "Fashionable", tr: "Modaya uygun"}, {en: "Terrific", tr: "Müthiş"},
+        {en: "Unbearable", tr: "Katlanılmaz"}, {en: "Healthy", tr: "Sağlıklı"}, {en: "Casual", tr: "Günlük"},
+        {en: "Impressive", tr: "Etkileyici"}, {en: "Trendy", tr: "Trend"}, {en: "Skilled", tr: "Yetenekli"}
     ];
 
-    let current = 0, streak = 0;
-    let quizWords = [];
+    let current = 0, streak = 0, miranName = "";
+    let gameList = [];
 
-    function startApp() {
+    function initGame() {
+        miranName = document.getElementById('user-name').value.trim();
+        if(!miranName) { alert("Lütfen ismini yaz!"); return; }
+        
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('game-screen').classList.remove('hidden');
-        quizWords = [...dictionary].sort(() => Math.random() - 0.5);
-        loadQuestion();
+        document.getElementById('welcome-msg').innerText = "Hadi " + miranName + "!";
+        
+        gameList = [...words].sort(() => Math.random() - 0.5);
+        loadNewWord();
     }
 
-    function loadQuestion() {
-        if(current >= quizWords.length) {
-            alert("Mükemmel! Tüm kelimeleri bitirdin.");
+    function loadNewWord() {
+        if(current >= gameList.length) {
+            confetti({ particleCount: 200, spread: 70 });
+            alert("Tebrikler " + miranName + "! Hepsini bitirdin.");
             location.reload();
             return;
         }
 
-        const q = quizWords[current];
-        document.getElementById('q-word').innerText = q.en;
-        speak(q.en); // Otomatik seslendirme
+        const q = gameList[current];
+        document.getElementById('word-display').innerText = q.en;
+        speakText(); // Otomatik Telaffuz
         
-        // Şıkları hazırla
+        // Şıkları oluştur
         let opts = [q.tr];
         while(opts.length < 4) {
-            let r = dictionary[Math.floor(Math.random()*dictionary.length)].tr;
+            let r = words[Math.floor(Math.random()*words.length)].tr;
             if(!opts.includes(r)) opts.push(r);
         }
         opts.sort(() => Math.random() - 0.5);
 
-        const grid = document.getElementById('opt-grid');
-        grid.innerHTML = '';
+        const container = document.getElementById('opt-container');
+        container.innerHTML = '';
         opts.forEach(o => {
-            const btn = document.createElement('button');
-            btn.className = 'option-btn';
-            btn.innerText = o;
-            btn.onclick = () => checkAnswer(btn, o === q.tr);
-            grid.appendChild(btn);
+            const b = document.createElement('button');
+            b.className = 'opt';
+            b.innerText = o;
+            b.onclick = () => check(b, o === q.tr);
+            container.appendChild(b);
         });
 
-        document.getElementById('feedback-panel').className = '';
-        document.getElementById('progress-fill').style.width = (current / quizWords.length) * 100 + "%";
+        document.getElementById('footer-panel').classList.remove('show');
+        document.getElementById('bar-fill').style.width = (current / gameList.length) * 100 + "%";
     }
 
-    function checkAnswer(btn, isCorrect) {
-        const panel = document.getElementById('feedback-panel');
-        const msg = document.getElementById('feedback-msg');
-        const nextBtn = document.getElementById('next-btn');
-        
-        document.querySelectorAll('.option-btn').forEach(b => b.style.pointerEvents = 'none');
+    function check(btn, isCorrect) {
+        const panel = document.getElementById('footer-panel');
+        const msg = document.getElementById('status-msg');
+        document.querySelectorAll('.opt').forEach(b => b.style.pointerEvents = 'none');
 
         if(isCorrect) {
             btn.classList.add('correct');
-            panel.classList.add('show', 'panel-green');
-            msg.innerText = "Harikasın Miran! ✨";
+            panel.style.background = "#d7ffb8";
+            msg.innerText = "Harikasın " + miranName + "! ✨";
+            msg.style.color = "#46a302";
             streak++;
-            confetti({ particleCount: 40, spread: 60, origin: { y: 0.8 } });
+            if(streak % 5 === 0) confetti({ particleCount: 100, spread: 90 });
         } else {
             btn.classList.add('wrong');
-            panel.classList.add('show', 'panel-red');
-            msg.innerText = "Doğrusu: " + quizWords[current].tr;
+            panel.style.background = "#ffdfe0";
+            msg.innerText = "Doğrusu: " + gameList[current].tr;
+            msg.style.color = "#ff4b4b";
             streak = 0;
-            if(window.navigator.vibrate) window.navigator.vibrate(200); // Titreme
         }
+
+        document.getElementById('streak-val').innerText = streak;
+        panel.classList.add('show');
         
-        document.getElementById('streak').innerText = streak;
-        nextBtn.onclick = () => {
+        document.getElementById('continue-btn').onclick = () => {
             current++;
-            loadQuestion();
+            loadNewWord();
         };
     }
 
-    function speak(text) {
-        const s = new SpeechSynthesisUtterance(text);
-        s.lang = 'en-US';
-        window.speechSynthesis.speak(s);
+    function speakText() {
+        const synth = window.speechSynthesis;
+        const utter = new SpeechSynthesisUtterance(gameList[current].en);
+        utter.lang = 'en-US';
+        synth.speak(utter);
     }
 </script>
 </body>
