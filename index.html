@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Miran Lingo - İngilizce Öğren</title>
+    <style>
+        :root {
+            --primary: #58cc02;
+            --primary-dark: #46a302;
+            --secondary: #1cb0f6;
+            --error: #ff4b4b;
+            --text: #4b4b4b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #fff;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text);
+        }
+
+        /* Giriş Ekranı */
+        #auth-screen, #main-menu, #game-screen {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 0 var(--primary-dark);
+            transition: all 0.1s;
+            width: 80%;
+            font-size: 18px;
+        }
+
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 var(--primary-dark);
+        }
+
+        input {
+            padding: 15px;
+            border: 2px solid #e5e5e5;
+            border-radius: 15px;
+            width: 80%;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        /* Kart Yapısı */
+        .card {
+            background: white;
+            border: 2px solid #e5e5e5;
+            border-radius: 20px;
+            padding: 40px 20px;
+            margin: 20px 0;
+            font-size: 32px;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #e5e5e5;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            background: #e5e5e5;
+            height: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background: var(--primary);
+            border-radius: 10px;
+            transition: width 0.3s;
+        }
+
+        /* Öneri Kutusu */
+        .suggestion-box {
+            margin-top: 50px;
+            border-top: 2px solid #eee;
+            padding-top: 20px;
+            width: 100%;
+        }
+
+        #suggestion-list {
+            text-align: left;
+            background: #f7f7f7;
+            padding: 10px;
+            border-radius: 10px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="auth-screen">
+        <h1 style="color: var(--primary)">MiranLingo</h1>
+        <p>Hoş geldin! Adın nedir?</p>
+        <input type="text" id="username-input" placeholder="Kullanıcı adın...">
+        <button class="btn" onclick="login()">Devam Et</button>
+    </div>
+
+    <div id="main-menu" class="hidden">
+        <h2 id="welcome-text">Selam!</h2>
+        <button class="btn" style="background-color: var(--secondary); box-shadow: 0 5px 0 #1899d6;" onclick="startGame()">İNGİLİZCEYE BAŞLA</button>
+        
+        <div class="suggestion-box">
+            <h4>Öneri Gönder</h4>
+            <input type="text" id="suggestion-input" placeholder="Bir kelime öner..." style="width: 70%;">
+            <button class="btn" style="width: 20%; padding: 10px;" onclick="addSuggestion()">+</button>
+            <div id="suggestion-list"></div>
+        </div>
+    </div>
+
+    <div id="game-screen" class="hidden">
+        <div class="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+        <p>Bu kelimenin anlamı nedir?</p>
+        <div class="card" id="word-card">Apple</div>
+        <input type="text" id="answer-input" placeholder="Cevabını yaz...">
+        <button class="btn" onclick="checkAnswer()">Kontrol Et</button>
+        <p id="feedback"></p>
+    </div>
+
+    <script>
+        let currentUser = "";
+        let currentWordIndex = 0;
+        let score = 0;
+
+        // 100 Kelimelik Liste (Örnek başlangıç)
+        const words = [
+            { en: "Apple", tr: "elma" },
+            { en: "Computer", tr: "bilgisayar" },
+            { en: "Game", tr: "oyun" },
+            { en: "Future", tr: "gelecek" },
+            { en: "Success", tr: "başarı" }
+            // Buraya 100 kelimeye kadar ekleme yapabilirsin
+        ];
+
+        function login() {
+            currentUser = document.getElementById("username-input").value;
+            if(currentUser) {
+                document.getElementById("auth-screen").classList.add("hidden");
+                document.getElementById("main-menu").classList.remove("hidden");
+                document.getElementById("welcome-text").innerText = `Selam ${currentUser}, Hazır mısın?`;
+                loadSuggestions();
+            }
+        }
+
+        function startGame() {
+            document.getElementById("main-menu").classList.add("hidden");
+            document.getElementById("game-screen").classList.remove("hidden");
+            showWord();
+        }
+
+        function showWord() {
+            document.getElementById("word-card").innerText = words[currentWordIndex].en;
+            document.getElementById("answer-input").value = "";
+            let progress = (currentWordIndex / words.length) * 100;
+            document.getElementById("progress-bar").style.width = progress + "%";
+        }
+
+        function checkAnswer() {
+            let userAns = document.getElementById("answer-input").value.toLowerCase().trim();
+            let correctAns = words[currentWordIndex].tr.toLowerCase();
+
+            if(userAns === correctAns) {
+                currentWordIndex++;
+                score += 10;
+                document.getElementById("feedback").innerText = "Harika! +10 Puan";
+                document.getElementById("feedback").style.color = "green";
+                
+                if(currentWordIndex < words.length) {
+                    setTimeout(showWord, 1000);
+                } else {
+                    alert("Tebrikler! Tüm kelimeleri bitirdin. Toplam Puan: " + score);
+                }
+            } else {
+                document.getElementById("feedback").innerText = "Tekrar dene!";
+                document.getElementById("feedback").style.color = "red";
+            }
+        }
+
+        function addSuggestion() {
+            let sug = document.getElementById("suggestion-input").value;
+            if(sug) {
+                let list = JSON.parse(localStorage.getItem("suggestions") || "[]");
+                list.push(`${currentUser}: ${sug}`);
+                localStorage.setItem("suggestions", JSON.stringify(list));
+                document.getElementById("suggestion-input").value = "";
+                loadSuggestions();
+            }
+        }
+
+        function loadSuggestions() {
+            let list = JSON.parse(localStorage.getItem("suggestions") || "[]");
+            document.getElementById("suggestion-list").innerHTML = list.map(s => `<p>${s}</p>`).join("");
+        }
+    </script>
+</body>
+</html>
