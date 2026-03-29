@@ -3,166 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MiranLingo Elite V5</title>
+    <title>MiranLingo Pro Max</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
         :root {
-            --green: #58cc02; --blue: #1cb0f6; --red: #ff4b4b; --purple: #a855f7;
-            --white: #ffffff; --bg: #f0f2f5;
+            --primary: #58cc02; --primary-dark: #46a302;
+            --blue: #1cb0f6; --blue-dark: #1899d6;
+            --red: #ff4b4b; --text: #4b4b4b;
+            --gray: #e5e5e5;
         }
 
         body { 
-            font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden;
-            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
-            display: flex; justify-content: center; height: 100vh;
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            margin: 0; background: #fff; overflow: hidden;
+            display: flex; justify-content: center;
         }
 
-        .app { width: 100%; max-width: 420px; padding: 20px; display: flex; flex-direction: column; position: relative; }
+        .app-container {
+            width: 100%; max-width: 414px; height: 100vh;
+            display: flex; flex-direction: column; padding: 20px; box-sizing: border-box;
+        }
 
-        /* Üst Panel */
-        .stats { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; z-index: 10; }
-        .stat-pill { background: white; padding: 5px 15px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); font-weight: bold; }
-
-        /* Zaman Barı */
-        .timer-cont { width: 100%; height: 10px; background: #ddd; border-radius: 5px; margin: 15px 0; overflow: hidden; }
-        #timer-bar { width: 100%; height: 100%; background: var(--blue); transition: width 0.1s linear; }
+        /* Üst Bar */
+        .top-bar { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .progress-container { flex-grow: 1; height: 16px; background: var(--gray); border-radius: 10px; overflow: hidden; }
+        #progress-fill { width: 0%; height: 100%; background: var(--primary); transition: 0.4s; }
 
         /* Soru Kartı */
-        .card { 
-            background: white; border-radius: 25px; padding: 40px 20px; text-align: center;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05); margin-bottom: 25px;
-            animation: cardEnter 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        .quiz-box { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .character-icon { font-size: 50px; margin-bottom: 10px; animation: bounce 2s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        
+        .question-card {
+            background: white; border: 2px solid var(--gray); border-radius: 20px;
+            padding: 30px; width: 100%; box-sizing: border-box; position: relative;
+            margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
-        @keyframes cardEnter { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-        .q-text { font-size: 38px; font-weight: 900; color: #333; margin: 0; }
-        .level-tag { color: var(--purple); font-size: 14px; font-weight: bold; margin-bottom: 10px; display: block; }
+        .question-word { font-size: 32px; font-weight: 900; color: #3c3c3c; margin: 0; }
 
         /* Şıklar */
-        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .opt { 
-            background: white; border: 2px solid #e5e5e5; border-bottom: 5px solid #e5e5e5;
-            border-radius: 18px; padding: 18px 10px; font-size: 17px; font-weight: bold;
-            cursor: pointer; transition: 0.1s; color: #4b4b4b;
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+        .option-btn {
+            background: white; border: 2px solid var(--gray); border-bottom: 5px solid var(--gray);
+            border-radius: 15px; padding: 18px 10px; font-size: 16px; font-weight: bold;
+            color: var(--text); cursor: pointer; transition: 0.1s;
         }
-        .opt:active { transform: translateY(3px); border-bottom-width: 2px; }
-        .correct { background: var(--green) !important; color: white !important; border-color: #46a302 !important; }
-        .wrong { background: var(--red) !important; color: white !important; border-color: #c0392b !important; }
+        .option-btn:active { transform: translateY(3px); border-bottom-width: 2px; }
+        .option-btn.correct { background: #d7ffb8; border-color: var(--primary); color: var(--primary-dark); }
+        .option-btn.wrong { background: #ffdfe0; border-color: var(--red); color: var(--red); }
 
-        /* Joker ve Özel Butonlar */
-        .joker-btn { 
-            margin-top: 20px; background: var(--purple); color: white; border: none; 
-            padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #7e22ce;
+        /* Alt Mesaj Paneli */
+        #feedback-panel {
+            position: fixed; bottom: -150px; left: 0; right: 0; height: 120px;
+            transition: 0.3s; padding: 20px; display: flex; flex-direction: column; align-items: center;
         }
-        .joker-btn:disabled { background: #ccc; box-shadow: none; transform: none; opacity: 0.6; }
-
-        /* Combo Efekti */
-        #combo-msg { 
-            position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 40px; font-weight: 900; color: var(--purple); pointer-events: none; opacity: 0;
-            text-shadow: 2px 2px 10px rgba(0,0,0,0.2); z-index: 100;
-        }
-        .pop { animation: popAnim 0.6s ease-out; }
-        @keyframes popAnim { 0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); } 100% { opacity: 0; transform: translate(-50%, -70%) scale(1.5); } }
+        #feedback-panel.show { bottom: 0; }
+        .panel-green { background: #d7ffb8; color: var(--primary-dark); }
+        .panel-red { background: #ffdfe0; color: var(--red); }
 
         .hidden { display: none !important; }
-        .full-screen { position: fixed; inset: 0; background: white; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; }
+        .main-btn {
+            background: var(--primary); color: white; border: none; padding: 15px 40px;
+            border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 5px 0 var(--primary-dark);
+        }
     </style>
 </head>
 <body>
 
-<div id="combo-msg">HARİKA!</div>
-
-<div class="app">
-    <div id="start-ui" class="full-screen">
-        <h1 style="color: var(--green); font-size: 45px; margin-bottom: 10px;">MiranLingo</h1>
-        <p style="color: #666; margin-bottom: 30px;">LGS İngilizce Canavarı Ol!</p>
-        <div style="background: #f7f7f7; padding: 20px; border-radius: 20px; margin-bottom: 30px; width: 80%;">
-            <p>🏆 En Yüksek Skor: <b id="hs-val">0</b></p>
-        </div>
-        <button onclick="startGame()" style="background: var(--green); color: white; border: none; padding: 20px 60px; border-radius: 20px; font-size: 24px; font-weight: 900; cursor: pointer; box-shadow: 0 8px 0 #46a302;">BAŞLA</button>
+<div class="app-container">
+    <div id="start-screen" class="quiz-box">
+        <div class="character-icon">🦉</div>
+        <h1 style="color: var(--primary); font-size: 36px; margin: 10px 0;">MiranLingo</h1>
+        <p style="color: #afafaf; font-weight: bold;">LGS İÇİN 70+ KELİME!</p>
+        <button class="main-btn" onclick="startApp()">ÖĞRENMEYE BAŞLA</button>
     </div>
 
-    <div id="game-ui" class="hidden">
-        <div class="stats">
-            <div class="stat-pill" style="color: orange;">🔥 <span id="streak">0</span></div>
-            <div class="stat-pill" id="level-pill">Lv. 1</div>
-            <div class="stat-pill" style="color: var(--blue);">💎 <span id="score">0</span></div>
+    <div id="game-screen" class="hidden">
+        <div class="top-bar">
+            <span onclick="location.reload()" style="cursor:pointer; font-size: 24px; color: #ccc;">✖</span>
+            <div class="progress-container"><div id="progress-fill"></div></div>
+            <span style="color: orange; font-weight: bold;">🔥 <span id="streak">0</span></span>
         </div>
 
-        <div class="timer-cont"><div id="timer-bar"></div></div>
+        <div class="quiz-box">
+            <div class="question-card">
+                <p style="color: #ccc; font-size: 12px; margin-bottom: 5px;">BU KELİMENİN ANLAMI NEDİR?</p>
+                <h2 class="question-word" id="q-word">Word</h2>
+            </div>
 
-        <div class="card">
-            <span class="level-tag" id="q-count">Soru 1/44</span>
-            <h2 class="q-text" id="target-word">Apple</h2>
+            <div class="options-grid" id="opt-grid">
+                </div>
         </div>
-
-        <div class="options" id="opt-grid">
-            <button class="opt">A</button>
-            <button class="opt">B</button>
-            <button class="opt">C</button>
-            <button class="opt">D</button>
-        </div>
-
-        <button class="joker-btn" id="joker" onclick="useJoker()">🃏 50/50 Jokerini Kullan</button>
     </div>
 
-    <div id="end-ui" class="full-screen hidden">
-        <h2 style="color: var(--purple);">Ünite Tamamlandı!</h2>
-        <h1 id="final-score" style="font-size: 60px; margin: 10px 0;">0</h1>
-        <p id="accuracy-text">Başarı Oranı: %100</p>
-        <div id="mistakes-box" style="text-align: left; background: #fff5f5; padding: 15px; border-radius: 15px; width: 100%; max-height: 200px; overflow-y: auto; margin-top: 15px; font-size: 14px;">
-            <b>Geliştirmen Gerekenler:</b><br>
-        </div>
-        <button onclick="location.reload()" style="margin-top: 25px; padding: 15px 40px; border-radius: 15px; border: none; background: var(--blue); color: white; font-weight: bold; cursor: pointer;">TEKRAR DENE</button>
+    <div id="feedback-panel">
+        <h2 id="feedback-msg" style="margin: 0;">Harika!</h2>
+        <button class="main-btn" style="margin-top: 10px; width: 100%;" id="next-btn">DEVAM ET</button>
     </div>
 </div>
 
 <script>
-    const words = [
-        {en: "Honest", tr: "dürüst"}, {en: "Generous", tr: "cömert"}, {en: "Reliable", tr: "güvenilir"},
-        {en: "Adventurous", tr: "maceracı"}, {en: "Stubborn", tr: "inatçı"}, {en: "Amusing", tr: "eğlenceli"},
-        {en: "Arrogant", tr: "kibirli"}, {en: "Selfish", tr: "bencil"}, {en: "Sneaky", tr: "sinsi"},
-        {en: "Loyal", tr: "sadık"}, {en: "Tactful", tr: "nazik"}, {en: "Fair", tr: "adil"},
-        {en: "Buddy", tr: "kanka"}, {en: "Back up", tr: "desteklemek"}, {en: "Count on", tr: "güvenmek"},
-        {en: "Get on well", tr: "iyi geçinmek"}, {en: "Accept", tr: "kabul etmek"}, {en: "Refuse", tr: "reddetmek"},
-        {en: "Invite", tr: "davet etmek"}, {en: "Stranger", tr: "yabancı"}, {en: "Awesome", tr: "harika"},
-        {en: "Exhibition", tr: "sergi"}, {en: "Tournament", tr: "turnuva"}, {en: "Fee", tr: "ücret"},
-        {en: "Reunion", tr: "yeniden buluşma"}, {en: "Calm", tr: "sakin"}, {en: "Cool", tr: "havalı"},
-        {en: "Exciting", tr: "heyecan verici"}, {en: "Fashionable", tr: "modaya uygun"}, {en: "Terrific", tr: "müthiş"},
-        {en: "Unbearable", tr: "katlanılmaz"}, {en: "Healthy", tr: "sağlıklı"}, {en: "Casual", tr: "günlük"},
-        {en: "Impressive", tr: "etkileyici"}, {en: "Trendy", tr: "trend"}, {en: "Skilled", tr: "yetenekli"},
-        {en: "Harmful", tr: "zararlı"}, {en: "Ridiculous", tr: "saçma"}, {en: "Serious", tr: "ciddi"},
-        {en: "Success", tr: "başarı"}, {en: "Goal", tr: "hedef"}, {en: "Dream", tr: "hayal"},
-        {en: "Lazy", tr: "tembel"}, {en: "Punctual", tr: "dakik"}
+    const dictionary = [
+        {en: "Incredible", tr: "İnanılmaz"}, {en: "Boring", tr: "Sıkıcı"}, {en: "Generous", tr: "Cömert"},
+        {en: "Selfish", tr: "Bencil"}, {en: "Arrogant", tr: "Kibirli"}, {en: "Reliable", tr: "Güvenilir"},
+        {en: "Support", tr: "Desteklemek"}, {en: "Adventure", tr: "Macera"}, {en: "Exhibition", tr: "Sergi"},
+        {en: "Tournament", tr: "Turnuva"}, {en: "Fee", tr: "Ücret"}, {en: "Reunion", tr: "Buluşma"},
+        {en: "Calm", tr: "Sakin"}, {en: "Cool", tr: "Havalı"}, {en: "Exciting", tr: "Heyecanlı"},
+        {en: "Fashionable", tr: "Modaya uygun"}, {en: "Terrific", tr: "Müthiş"}, {en: "Unbearable", tr: "Katlanılmaz"},
+        {en: "Healthy", tr: "Sağlıklı"}, {en: "Casual", tr: "Günlük"}, {en: "Impressive", tr: "Etkileyici"},
+        {en: "Trendy", tr: "Trend"}, {en: "Skilled", tr: "Yetenekli"}, {en: "Harmful", tr: "Zararlı"},
+        {en: "Ridiculous", tr: "Saçma"}, {en: "Serious", tr: "Ciddi"}, {en: "Success", tr: "Başarı"},
+        {en: "Goal", tr: "Hedef"}, {en: "Dream", tr: "Hayal"}, {en: "Punctual", tr: "Dakik"},
+        {en: "Honest", tr: "Dürüst"}, {en: "Stubborn", tr: "İnatçı"}, {en: "Back up", tr: "Desteklemek"},
+        {en: "Count on", tr: "Güvenmek"}, {en: "Buddy", tr: "Kanka"}, {en: "Sneaky", tr: "Sinsi"}
     ];
 
-    let current = 0, score = 0, streak = 0, level = 1, lives = 3, timeLeft = 100;
-    let timer, mistakes = [], jokerUsed = false;
+    let current = 0, streak = 0;
+    let quizWords = [];
 
-    document.getElementById('hs-val').innerText = localStorage.getItem('miranHS') || 0;
-
-    function startGame() {
-        document.getElementById('start-ui').classList.add('hidden');
-        document.getElementById('game-ui').classList.remove('hidden');
-        words.sort(() => Math.random() - 0.5);
-        next();
+    function startApp() {
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        quizWords = [...dictionary].sort(() => Math.random() - 0.5);
+        loadQuestion();
     }
 
-    function next() {
-        if(current >= words.length) { finish(); return; }
-        
-        clearInterval(timer);
-        timeLeft = 100;
-        startTimer();
+    function loadQuestion() {
+        if(current >= quizWords.length) {
+            alert("Mükemmel! Tüm kelimeleri bitirdin.");
+            location.reload();
+            return;
+        }
 
-        document.getElementById('q-count').innerText = `Soru ${current + 1}/${words.length}`;
-        document.getElementById('target-word').innerText = words[current].en;
+        const q = quizWords[current];
+        document.getElementById('q-word').innerText = q.en;
+        speak(q.en); // Otomatik seslendirme
         
         // Şıkları hazırla
-        let opts = [words[current].tr];
+        let opts = [q.tr];
         while(opts.length < 4) {
-            let r = words[Math.floor(Math.random()*words.length)].tr;
+            let r = dictionary[Math.floor(Math.random()*dictionary.length)].tr;
             if(!opts.includes(r)) opts.push(r);
         }
         opts.sort(() => Math.random() - 0.5);
@@ -170,97 +151,49 @@
         const grid = document.getElementById('opt-grid');
         grid.innerHTML = '';
         opts.forEach(o => {
-            const b = document.createElement('button');
-            b.className = 'opt';
-            b.innerText = o;
-            b.onclick = () => check(b, o === words[current].tr);
-            grid.appendChild(b);
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = o;
+            btn.onclick = () => checkAnswer(btn, o === q.tr);
+            grid.appendChild(btn);
         });
+
+        document.getElementById('feedback-panel').className = '';
+        document.getElementById('progress-fill').style.width = (current / quizWords.length) * 100 + "%";
     }
 
-    function startTimer() {
-        timer = setInterval(() => {
-            timeLeft -= 1.2;
-            document.getElementById('timer-bar').style.width = timeLeft + "%";
-            if(timeLeft <= 0) { showCombo("SÜRE BİTTİ!"); current++; next(); }
-        }, 100);
-    }
-
-    function check(btn, isCorrect) {
-        clearInterval(timer);
-        const btns = document.querySelectorAll('.opt');
-        btns.forEach(b => b.style.pointerEvents = 'none');
+    function checkAnswer(btn, isCorrect) {
+        const panel = document.getElementById('feedback-panel');
+        const msg = document.getElementById('feedback-msg');
+        const nextBtn = document.getElementById('next-btn');
+        
+        document.querySelectorAll('.option-btn').forEach(b => b.style.pointerEvents = 'none');
 
         if(isCorrect) {
             btn.classList.add('correct');
-            let points = 10;
-            if(timeLeft > 80) { points *= 2; showCombo("KRİTİK VURUŞ! X2"); }
-            else if(streak > 3) { showCombo("DURDURULAMAZ!"); }
-            
-            score += points;
+            panel.classList.add('show', 'panel-green');
+            msg.innerText = "Harikasın Miran! ✨";
             streak++;
-            confetti({ particleCount: 30, origin: { y: 0.8 } });
+            confetti({ particleCount: 40, spread: 60, origin: { y: 0.8 } });
         } else {
             btn.classList.add('wrong');
+            panel.classList.add('show', 'panel-red');
+            msg.innerText = "Doğrusu: " + quizWords[current].tr;
             streak = 0;
-            mistakes.push(words[current]);
-            btns.forEach(b => { if(b.innerText === words[current].tr) b.classList.add('correct'); });
+            if(window.navigator.vibrate) window.navigator.vibrate(200); // Titreme
         }
-
-        document.getElementById('score').innerText = score;
+        
         document.getElementById('streak').innerText = streak;
-        
-        // Seviye atlama kontrolü
-        if(current % 5 === 0 && current !== 0) { 
-            level++; 
-            document.getElementById('level-pill').innerText = "Lv. " + level;
-            document.body.style.background = `linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)`;
-        }
-
-        current++;
-        setTimeout(next, 900);
+        nextBtn.onclick = () => {
+            current++;
+            loadQuestion();
+        };
     }
 
-    function useJoker() {
-        if(jokerUsed) return;
-        jokerUsed = true;
-        document.getElementById('joker').disabled = true;
-        const btns = document.querySelectorAll('.opt');
-        let count = 0;
-        btns.forEach(b => {
-            if(b.innerText !== words[current].tr && count < 2) {
-                b.style.opacity = '0.2';
-                b.style.pointerEvents = 'none';
-                count++;
-            }
-        });
-    }
-
-    function showCombo(txt) {
-        const el = document.getElementById('combo-msg');
-        el.innerText = txt;
-        el.classList.remove('pop');
-        void el.offsetWidth; // Reset animation
-        el.classList.add('pop');
-    }
-
-    function finish() {
-        document.getElementById('game-ui').classList.add('hidden');
-        document.getElementById('end-ui').classList.remove('hidden');
-        document.getElementById('final-score').innerText = score;
-        
-        let hs = localStorage.getItem('miranHS') || 0;
-        if(score > hs) localStorage.setItem('miranHS', score);
-
-        const mBox = document.getElementById('mistakes-box');
-        if(mistakes.length > 0) {
-            mistakes.forEach(m => {
-                mBox.innerHTML += `<p>❌ ${m.en} = ${m.tr}</p>`;
-            });
-        } else {
-            mBox.innerHTML = "🎉 Hiç hata yapmadın, mükemmelsin!";
-        }
-        confetti({ particleCount: 200, spread: 100 });
+    function speak(text) {
+        const s = new SpeechSynthesisUtterance(text);
+        s.lang = 'en-US';
+        window.speechSynthesis.speak(s);
     }
 </script>
 </body>
