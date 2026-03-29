@@ -3,194 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MiranLingo V6 - Ultra</title>
+    <title>MiranLingo V7 - LGS Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
-        :root {
-            --primary: #58cc02; --blue: #1cb0f6; --red: #ff4b4b; --gray: #e5e5e5;
-        }
-        body { 
-            font-family: 'Segoe UI', sans-serif; margin: 0; background: #fff; 
-            display: flex; justify-content: center; height: 100vh; overflow: hidden;
-        }
-        .app { width: 100%; max-width: 414px; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; }
+        :root { --p: #58cc02; --s: #1cb0f6; --r: #ff4b4b; --g: #afafaf; --w: #ffffff; }
+        body { font-family: 'DIN Round', sans-serif; margin: 0; background: #fff; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+        .app { width: 100%; max-width: 414px; display: flex; flex-direction: column; padding: 15px; box-sizing: border-box; }
         
-        /* Progress & Stats */
-        .top-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
-        .bar-bg { flex-grow: 1; height: 14px; background: var(--gray); border-radius: 10px; overflow: hidden; }
-        #bar-fill { width: 0%; height: 100%; background: var(--primary); transition: 0.5s; }
-        
-        /* Card Style */
-        .card {
-            background: white; border: 2px solid var(--gray); border-bottom: 6px solid var(--gray);
-            border-radius: 25px; padding: 40px 20px; text-align: center; margin-bottom: 20px;
-            animation: slideIn 0.4s ease-out; position: relative;
-        }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .q-word { font-size: 36px; font-weight: 900; color: #3c3c3c; margin: 0; }
-        .speaker-icon { font-size: 24px; cursor: pointer; color: var(--blue); margin-top: 10px; display: block; }
+        /* Stats & Progress */
+        .header { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+        .progress-box { flex-grow: 1; height: 12px; background: #eee; border-radius: 10px; overflow: hidden; }
+        #bar { width: 0%; height: 100%; background: var(--p); transition: 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
+        .stat { font-weight: 800; color: #4b4b4b; font-size: 16px; display: flex; align-items: center; gap: 4px; }
+
+        /* Card & Quiz */
+        .main-card { background: var(--w); border: 2px solid #e5e5e5; border-bottom: 6px solid #e5e5e5; border-radius: 20px; padding: 35px 15px; text-align: center; margin-bottom: 20px; animation: popIn 0.3s ease; }
+        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .q-text { font-size: 34px; font-weight: 900; color: #3c3c3c; margin: 10px 0; }
+        .shake { animation: shakeAnim 0.3s; border-color: var(--r); }
+        @keyframes shakeAnim { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
 
         /* Options */
-        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .opt {
-            background: white; border: 2px solid var(--gray); border-bottom: 5px solid var(--gray);
-            border-radius: 18px; padding: 18px 5px; font-size: 16px; font-weight: bold;
-            cursor: pointer; transition: 0.1s;
-        }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .opt { background: var(--w); border: 2px solid #e5e5e5; border-bottom: 5px solid #e5e5e5; border-radius: 15px; padding: 16px 8px; font-size: 15px; font-weight: 800; cursor: pointer; transition: 0.1s; color: #4b4b4b; outline: none; -webkit-tap-highlight-color: transparent; }
         .opt:active { transform: translateY(3px); border-bottom-width: 2px; }
-        .correct { background: #d7ffb8 !important; border-color: var(--primary) !important; color: #46a302 !important; }
-        .wrong { background: #ffdfe0 !important; border-color: var(--red) !important; color: var(--red) !important; }
+        .opt.correct { background: #d7ffb8 !important; border-color: var(--p) !important; color: #46a302 !important; }
+        .opt.wrong { background: #ffdfe0 !important; border-color: var(--r) !important; color: var(--r) !important; }
 
-        /* Feedback Panel */
-        #footer-panel {
-            position: fixed; bottom: -160px; left: 0; right: 0; background: #fff;
-            padding: 25px; border-top: 2px solid var(--gray); transition: 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-            display: flex; flex-direction: column; align-items: center; z-index: 100;
-        }
-        #footer-panel.show { bottom: 0; }
-        
-        .btn {
-            background: var(--primary); color: white; border: none; padding: 15px 30px;
-            border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer;
-            box-shadow: 0 5px 0 #46a302; width: 100%;
-        }
+        /* Footer Panel */
+        #panel { position: fixed; bottom: -180px; left: 0; right: 0; background: var(--w); padding: 25px; border-top: 3px solid #eee; transition: 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); z-index: 100; text-align: center; }
+        #panel.active { bottom: 0; }
+        .btn { background: var(--p); color: var(--w); border: none; padding: 15px; border-radius: 15px; font-size: 18px; font-weight: 800; cursor: pointer; box-shadow: 0 5px 0 #46a302; width: 100%; transition: 0.1s; }
+        .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #46a302; }
 
         .hidden { display: none !important; }
-        .overlay { position: fixed; inset: 0; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; padding: 20px; text-align: center; }
+        .overlay { position: fixed; inset: 0; background: var(--w); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; padding: 30px; }
+        input { padding: 15px; border: 2px solid #ddd; border-radius: 12px; width: 80%; font-size: 18px; margin-bottom: 20px; outline: none; }
     </style>
 </head>
 <body>
 
 <div class="app">
-    <div id="start-screen" class="overlay">
-        <h1 style="color: var(--primary); font-size: 42px;">MiranLingo</h1>
-        <p style="font-size: 20px; font-weight: bold; color: #666;">Birlikte İngilizce Öğrenelim!</p>
-        <input type="text" id="user-name" placeholder="İismin nedir?" style="padding: 15px; border: 2px solid #ddd; border-radius: 12px; width: 80%; font-size: 18px; margin-bottom: 20px;">
-        <button class="btn" onclick="initGame()" style="width: 85%;">BAŞLA 🚀</button>
+    <div id="start-ui" class="overlay">
+        <h1 style="color: var(--p); font-size: 45px; margin: 0;">MiranLingo</h1>
+        <p style="font-size: 18px; font-weight: 800; color: #777; margin-bottom: 30px;">Birlikte İngilizce Öğrenelim!</p>
+        <input type="text" id="name-in" placeholder="Adın nedir Miran?" autofocus>
+        <button class="btn" style="width: 85%;" onclick="startApp()">BAŞLAYALIM 🚀</button>
     </div>
 
-    <div id="game-screen" class="hidden">
-        <div class="top-nav">
-            <span style="font-size: 20px; cursor: pointer;" onclick="location.reload()">✖</span>
-            <div class="bar-bg"><div id="bar-fill"></div></div>
-            <span style="color: orange; font-weight: bold;">🔥 <span id="streak-val">0</span></span>
+    <div id="game-ui" class="hidden">
+        <div class="header">
+            <span style="font-size: 22px; cursor: pointer; color: #ccc;" onclick="location.reload()">✕</span>
+            <div class="progress-box"><div id="bar"></div></div>
+            <div class="stat">🔥 <span id="streak">0</span></div>
+            <div class="stat">💎 <span id="xp">0</span></div>
         </div>
 
-        <div id="quiz-area">
-            <div class="card">
-                <p id="welcome-msg" style="color: var(--blue); font-weight: bold; margin: 0;"></p>
-                <h2 class="q-word" id="word-display">Word</h2>
-                <span class="speaker-icon" onclick="speakText()">🔊 Tekrar Dinle</span>
-            </div>
-            <div class="options" id="opt-container"></div>
+        <div class="main-card" id="q-card">
+            <p id="miran-msg" style="color: var(--s); font-weight: 800; margin: 0; font-size: 14px;"></p>
+            <h2 class="q-text" id="target">Word</h2>
+            <div onclick="speak()" style="cursor:pointer; color: var(--s); font-size: 14px; font-weight: 800;">🔊 DİNLE</div>
         </div>
+
+        <div class="grid" id="opt-grid"></div>
+        <p id="percent" style="text-align:center; color: #ccc; font-weight: 800; margin-top: 20px; font-size: 12px;">%0 Tamamlandı</p>
     </div>
 
-    <div id="footer-panel">
-        <h2 id="status-msg" style="margin: 0 0 15px 0;">Harika!</h2>
-        <button class="btn" id="continue-btn">DEVAM ET</button>
+    <div id="end-ui" class="overlay hidden">
+        <h2 style="color: var(--p); margin: 0;">LGS CANAVARI!</h2>
+        <h1 id="total-xp" style="font-size: 50px; margin: 10px 0;">0 XP</h1>
+        <div id="wrong-list" style="text-align: left; background: #f9f9f9; padding: 15px; border-radius: 15px; width: 100%; max-height: 200px; overflow-y: auto; font-size: 14px;">
+            <b>Geliştirilecek Kelimeler:</b><br>
+        </div>
+        <button class="btn" style="margin-top: 20px;" onclick="location.reload()">TEKRAR DENE</button>
+    </div>
+
+    <div id="panel">
+        <h2 id="msg" style="margin: 0 0 15px 0;">Harika!</h2>
+        <button class="btn" id="next">DEVAM ET</button>
     </div>
 </div>
 
 <script>
-    const words = [
+    const db = [
         {en: "Honest", tr: "Dürüst"}, {en: "Generous", tr: "Cömert"}, {en: "Reliable", tr: "Güvenilir"},
-        {en: "Stubborn", tr: "İnatçı"}, {en: "Back up", tr: "Desteklemek"}, {en: "Success", tr: "Başarı"},
-        {en: "Goal", tr: "Hedef"}, {en: "Dream", tr: "Hayal"}, {en: "Punctual", tr: "Dakik"},
-        {en: "Incredible", tr: "İnanılmaz"}, {en: "Boring", tr: "Sıkıcı"}, {en: "Arrogant", tr: "Kibirli"},
-        {en: "Selfish", tr: "Bencil"}, {en: "Sneaky", tr: "Sinsi"}, {en: "Adventure", tr: "Macera"},
-        {en: "Exhibition", tr: "Sergi"}, {en: "Tournament", tr: "Turnuva"}, {en: "Fee", tr: "Ücret"},
-        {en: "Reunion", tr: "Buluşma"}, {en: "Calm", tr: "Sakin"}, {en: "Cool", tr: "Havalı"},
-        {en: "Exciting", tr: "Heyecanlı"}, {en: "Fashionable", tr: "Modaya uygun"}, {en: "Terrific", tr: "Müthiş"},
-        {en: "Unbearable", tr: "Katlanılmaz"}, {en: "Healthy", tr: "Sağlıklı"}, {en: "Casual", tr: "Günlük"},
-        {en: "Impressive", tr: "Etkileyici"}, {en: "Trendy", tr: "Trend"}, {en: "Skilled", tr: "Yetenekli"}
+        {en: "Stubborn", tr: "İnatçı"}, {en: "Punctual", tr: "Dakik"}, {en: "Adventurous", tr: "Maceracı"},
+        {en: "Sneaky", tr: "Sinsi"}, {en: "Arrogant", tr: "Kibirli"}, {en: "Selfish", tr: "Bencil"},
+        {en: "Buddy", tr: "Kanka"}, {en: "Back up", tr: "Desteklemek"}, {en: "Count on", tr: "Güvenmek"},
+        {en: "Accept", tr: "Kabul etmek"}, {en: "Refuse", tr: "Reddetmek"}, {en: "Invite", tr: "Davet etmek"},
+        {en: "Incredible", tr: "İnanılmaz"}, {en: "Attentive", tr: "Dikkatli"}, {en: "Brave", tr: "Cesur"},
+        {en: "Clumsy", tr: "Sakar"}, {en: "Determined", tr: "Azimli"}, {en: "Forgetful", tr: "Unutkan"},
+        {en: "Greedy", tr: "Açgözlü"}, {en: "Helpful", tr: "Yardımsever"}, {en: "Impatient", tr: "Sabırsız"},
+        {en: "Jealous", tr: "Kıskanç"}, {en: "Kind", tr: "Nazik"}, {en: "Lazy", tr: "Tembel"},
+        {en: "Modest", tr: "Mütevazı"}, {en: "Naive", tr: "Saf"}, {en: "Optimistic", tr: "İyimser"},
+        {en: "Polite", tr: "Kibar"}, {en: "Rude", tr: "Kaba"}, {en: "Stingy", tr: "Cimri"},
+        {en: "Thoughtful", tr: "Düşünceli"}, {en: "Understanding", tr: "Anlayışlı"}, {en: "Witty", tr: "Zeki"},
+        {en: "Achieve", tr: "Başarmak"}, {en: "Create", tr: "Yaratmak"}, {en: "Decide", tr: "Karar vermek"}
     ];
 
-    let current = 0, streak = 0, miranName = "";
-    let gameList = [];
+    let current = 0, xp = 0, streak = 0, miran = "", mistakes = [], quiz = [];
 
-    function initGame() {
-        miranName = document.getElementById('user-name').value.trim();
-        if(!miranName) { alert("Lütfen ismini yaz!"); return; }
-        
-        document.getElementById('start-screen').classList.add('hidden');
-        document.getElementById('game-screen').classList.remove('hidden');
-        document.getElementById('welcome-msg').innerText = "Hadi " + miranName + "!";
-        
-        gameList = [...words].sort(() => Math.random() - 0.5);
-        loadNewWord();
+    function startApp() {
+        miran = document.getElementById('name-in').value.trim() || "Miran";
+        document.getElementById('start-ui').classList.add('hidden');
+        document.getElementById('game-ui').classList.remove('hidden');
+        quiz = [...db].sort(() => Math.random() - 0.5);
+        loadWord();
     }
 
-    function loadNewWord() {
-        if(current >= gameList.length) {
-            confetti({ particleCount: 200, spread: 70 });
-            alert("Tebrikler " + miranName + "! Hepsini bitirdin.");
-            location.reload();
-            return;
-        }
+    function loadWord() {
+        if(current >= quiz.length) { finish(); return; }
+        const q = quiz[current];
+        document.getElementById('target').innerText = q.en;
+        document.getElementById('miran-msg').innerText = "Hadi " + miran + "!";
+        document.getElementById('q-card').classList.remove('shake');
+        speak();
 
-        const q = gameList[current];
-        document.getElementById('word-display').innerText = q.en;
-        speakText(); // Otomatik Telaffuz
-        
-        // Şıkları oluştur
         let opts = [q.tr];
         while(opts.length < 4) {
-            let r = words[Math.floor(Math.random()*words.length)].tr;
+            let r = db[Math.floor(Math.random()*db.length)].tr;
             if(!opts.includes(r)) opts.push(r);
         }
         opts.sort(() => Math.random() - 0.5);
 
-        const container = document.getElementById('opt-container');
-        container.innerHTML = '';
+        const grid = document.getElementById('opt-grid');
+        grid.innerHTML = '';
         opts.forEach(o => {
             const b = document.createElement('button');
             b.className = 'opt';
             b.innerText = o;
             b.onclick = () => check(b, o === q.tr);
-            container.appendChild(b);
+            grid.appendChild(b);
         });
 
-        document.getElementById('footer-panel').classList.remove('show');
-        document.getElementById('bar-fill').style.width = (current / gameList.length) * 100 + "%";
+        document.getElementById('panel').classList.remove('active');
+        document.getElementById('bar').style.width = (current / quiz.length) * 100 + "%";
+        document.getElementById('percent').innerText = "%" + Math.floor((current/quiz.length)*100) + " Tamamlandı";
     }
 
     function check(btn, isCorrect) {
-        const panel = document.getElementById('footer-panel');
-        const msg = document.getElementById('status-msg');
+        const p = document.getElementById('panel'), m = document.getElementById('msg');
         document.querySelectorAll('.opt').forEach(b => b.style.pointerEvents = 'none');
 
         if(isCorrect) {
             btn.classList.add('correct');
-            panel.style.background = "#d7ffb8";
-            msg.innerText = "Harikasın " + miranName + "! ✨";
-            msg.style.color = "#46a302";
-            streak++;
-            if(streak % 5 === 0) confetti({ particleCount: 100, spread: 90 });
+            p.style.background = "#d7ffb8";
+            m.innerText = "Mükemmel " + miran + "! ✨";
+            m.style.color = "#46a302";
+            streak++; xp += (10 + streak);
+            if(streak % 5 === 0) confetti({ particleCount: 100, spread: 70 });
         } else {
             btn.classList.add('wrong');
-            panel.style.background = "#ffdfe0";
-            msg.innerText = "Doğrusu: " + gameList[current].tr;
-            msg.style.color = "#ff4b4b";
+            document.getElementById('q-card').classList.add('shake');
+            p.style.background = "#ffdfe0";
+            m.innerText = "Doğrusu: " + quiz[current].tr;
+            m.style.color = "#ff4b4b";
+            mistakes.push(quiz[current]);
             streak = 0;
         }
 
-        document.getElementById('streak-val').innerText = streak;
-        panel.classList.add('show');
+        document.getElementById('xp').innerText = xp;
+        document.getElementById('streak').innerText = streak;
+        p.classList.add('active');
         
-        document.getElementById('continue-btn').onclick = () => {
-            current++;
-            loadNewWord();
+        document.getElementById('next').onclick = () => {
+            current++; loadWord();
         };
     }
 
-    function speakText() {
-        const synth = window.speechSynthesis;
-        const utter = new SpeechSynthesisUtterance(gameList[current].en);
-        utter.lang = 'en-US';
-        synth.speak(utter);
+    function speak() {
+        const u = new SpeechSynthesisUtterance(quiz[current].en);
+        u.lang = 'en-US';
+        window.speechSynthesis.speak(u);
     }
+
+    function finish() {
+        document.getElementById('game-ui').classList.add('hidden');
+        document.getElementById('end-ui').classList.remove('hidden');
+        document.getElementById('total-xp').innerText = xp + " XP";
+        const box = document.getElementById('wrong-list');
+        if(mistakes.length > 0) {
+            mistakes.forEach(m => box.innerHTML += `<p>❌ ${m.en} = ${m.tr}</p>`);
+        } else { box.innerHTML = "🎉 Mükemmel! Hiç hata yapmadın."; }
+        confetti({ particleCount: 200, spread: 100 });
+    }
+
+    // Klavye Desteği
+    window.addEventListener('keydown', e => {
+        const keys = ["1","2","3","4"];
+        if(keys.includes(e.key)) {
+            const btns = document.querySelectorAll('.opt');
+            if(btns[e.key-1]) btns[e.key-1].click();
+        }
+        if(e.key === "Enter") {
+            const next = document.getElementById('next');
+            if(document.getElementById('panel').classList.contains('active')) next.click();
+        }
+    });
 </script>
 </body>
 </html>
