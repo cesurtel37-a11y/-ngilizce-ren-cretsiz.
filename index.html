@@ -3,172 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MiranLingo V8 - Legend</title>
+    <title>MiranLingo - Bölümler</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
-        :root { --p: #58cc02; --s: #1cb0f6; --r: #ff4b4b; --w: #ffffff; --t: #4b4b4b; --gold: #ffc107; }
-        body { font-family: 'DIN Round', 'Segoe UI', sans-serif; margin: 0; background: #fff; display: flex; justify-content: center; height: 100vh; overflow: hidden; -webkit-tap-highlight-color: transparent; }
-        .app { width: 100%; max-width: 414px; display: flex; flex-direction: column; padding: 15px; box-sizing: border-box; position: relative; }
+        :root { --p: #58cc02; --s: #1cb0f6; --r: #ff4b4b; --w: #ffffff; --t: #4b4b4b; --bg: #f7f8fa; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Segoe UI', sans-serif; }
+        body { margin: 0; background: var(--bg); display: flex; justify-content: center; height: 100vh; overflow: hidden; }
         
-        /* Nav & Progress */
-        .nav { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .bar-cont { flex-grow: 1; height: 14px; background: #eee; border-radius: 12px; overflow: hidden; }
-        #bar { width: 0%; height: 100%; background: var(--p); transition: 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
-        .league-badge { background: #f0f0f0; padding: 4px 10px; border-radius: 15px; font-size: 12px; font-weight: 900; color: var(--t); border: 1px solid #ddd; }
-
-        /* Stats Bar */
-        .stats { display: flex; justify-content: space-around; margin-bottom: 15px; background: #f7f7f7; padding: 8px; border-radius: 15px; }
-        .stat-v { font-weight: 900; font-size: 14px; color: var(--t); }
-
-        /* Question Area */
-        .q-card { background: var(--w); border: 2px solid #e5e5e5; border-bottom: 6px solid #e5e5e5; border-radius: 20px; padding: 40px 15px; text-align: center; margin-bottom: 15px; transition: 0.3s; }
-        .word { font-size: 38px; font-weight: 900; color: #333; margin: 5px 0; }
-        .speaker { font-size: 14px; font-weight: 900; color: var(--s); cursor: pointer; margin-top: 10px; display: block; }
+        .app { width: 100%; max-width: 414px; height: 100%; display: flex; flex-direction: column; position: relative; }
         
-        /* Grid Options */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .opt { background: var(--w); border: 2px solid #e5e5e5; border-bottom: 5px solid #e5e5e5; border-radius: 18px; padding: 20px 5px; font-size: 15px; font-weight: 800; cursor: pointer; color: var(--t); transition: 0.1s; }
-        .opt:active { transform: translateY(3px); border-bottom-width: 2px; }
-        .correct { background: #d7ffb8 !important; border-color: var(--p) !important; color: #46a302 !important; }
-        .wrong { background: #ffdfe0 !important; border-color: var(--r) !important; color: var(--r) !important; }
+        /* Ana Sayfa (Harita) */
+        #home-screen { padding: 20px; overflow-y: auto; flex-grow: 1; padding-bottom: 80px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .user-info { display: flex; flex-direction: column; }
+        .user-name { font-size: 24px; font-weight: 900; color: #333; }
+        .xp-badge { background: var(--s); color: white; padding: 4px 12px; border-radius: 15px; font-weight: bold; font-size: 14px; }
 
-        /* Panels */
-        .panel { position: fixed; bottom: -200px; left: 0; right: 0; background: var(--w); padding: 25px; border-top: 3px solid #eee; transition: 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); z-index: 100; text-align: center; }
-        .panel.up { bottom: 0; }
-        .btn { background: var(--p); color: var(--w); border: none; padding: 15px; border-radius: 15px; font-size: 18px; font-weight: 900; cursor: pointer; box-shadow: 0 5px 0 #46a302; width: 100%; }
+        .unit-card {
+            background: white; border: 2px solid #e5e5e5; border-bottom: 6px solid #e5e5e5;
+            border-radius: 20px; padding: 20px; margin-bottom: 15px; cursor: pointer;
+            display: flex; align-items: center; gap: 15px; transition: 0.2s;
+        }
+        .unit-card.locked { opacity: 0.6; filter: grayscale(1); cursor: not-allowed; }
+        .unit-icon { font-size: 40px; background: #eee; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 15px; }
+        .unit-info { flex-grow: 1; }
+        .unit-title { font-weight: 900; font-size: 18px; color: #333; }
+        .unit-subtitle { font-size: 12px; color: #999; font-weight: bold; }
+
+        /* Oyun Ekranı */
+        #game-screen { padding: 20px; display: flex; flex-direction: column; height: 100%; background: white; z-index: 100; }
+        .nav-back { font-size: 24px; cursor: pointer; color: #ccc; margin-bottom: 10px; }
+        .progress-bar { width: 100%; height: 12px; background: #eee; border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+        #bar-fill { width: 0%; height: 100%; background: var(--p); transition: 0.4s; }
+
+        .quiz-area { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .q-card { border: 2px solid #eee; border-bottom: 5px solid #eee; border-radius: 20px; padding: 40px 20px; width: 100%; text-align: center; margin-bottom: 20px; }
+        .q-word { font-size: 36px; font-weight: 900; color: #333; }
+
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+        .opt { background: white; border: 2px solid #e5e5e5; border-bottom: 4px solid #e5e5e5; border-radius: 15px; padding: 18px 5px; font-weight: bold; cursor: pointer; }
+        .opt.correct { background: #d7ffb8; border-color: var(--p); }
+        .opt.wrong { background: #ffdfe0; border-color: var(--r); }
+
+        /* Footer Panel */
+        #panel { position: fixed; bottom: -150px; left: 0; right: 0; background: white; padding: 20px; border-top: 3px solid #eee; transition: 0.3s; z-index: 200; text-align: center; }
+        #panel.active { bottom: 0; }
+        .btn { background: var(--p); color: white; border: none; padding: 15px; border-radius: 15px; font-weight: 900; width: 100%; cursor: pointer; box-shadow: 0 5px 0 #46a302; }
 
         .hidden { display: none !important; }
-        .full { position: fixed; inset: 0; background: var(--w); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; padding: 30px; text-align: center; }
-        input { padding: 15px; border: 2px solid #ddd; border-radius: 15px; width: 85%; font-size: 18px; text-align: center; outline: none; margin-bottom: 20px; }
-        
-        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-10px)} 75%{transform:translateX(10px)} }
-        .shake { animation: shake 0.3s; }
     </style>
 </head>
 <body>
 
 <div class="app">
-    <div id="auth-ui" class="full hidden">
-        <h1 style="color: var(--p); font-size: 50px; margin: 0;">MiranLingo</h1>
-        <p style="font-weight: 900; color: #777; margin-bottom: 40px;">Birlikte İngilizce Öğrenelim!</p>
-        <input type="text" id="name-input" placeholder="İismin Nedir?">
-        <button class="btn" onclick="saveUser()" style="width: 85%;">HESABI OLUŞTUR 🚀</button>
+    <div id="home-screen">
+        <div class="header">
+            <div class="user-info">
+                <span class="user-subtitle">TEKRAR HOŞ GELDİN</span>
+                <span class="user-name" id="display-name">Miran</span>
+            </div>
+            <div class="xp-badge">💎 <span id="display-xp">0</span> XP</div>
+        </div>
+
+        <div id="unit-list">
+            </div>
     </div>
 
-    <div id="game-ui" class="">
-        <div class="nav">
-            <span onclick="resetProgress()" style="cursor:pointer; color:#ccc;">✕</span>
-            <div class="bar-cont"><div id="bar"></div></div>
-            <div class="league-badge" id="league-name">BRONZ LİG</div>
+    <div id="game-screen" class="hidden">
+        <div class="nav-back" onclick="goHome()">✕</div>
+        <div class="progress-bar"><div id="bar-fill"></div></div>
+        
+        <div class="quiz-area">
+            <div class="q-card">
+                <p style="color:var(--s); font-weight:bold; margin:0;">BU KELİME NEDİR?</p>
+                <h2 class="q-word" id="q-word">Word</h2>
+                <div onclick="speak()" style="color:var(--s); cursor:pointer; font-size:14px; font-weight:bold;">🔊 DİNLE</div>
+            </div>
+            <div class="options" id="opt-grid"></div>
         </div>
-
-        <div class="stats">
-            <div class="stat-v">🔥 <span id="streak">0</span></div>
-            <div class="stat-v">💎 <span id="xp">0</span> XP</div>
-            <div class="stat-v">👤 <span id="display-name">Miran</span></div>
-        </div>
-
-        <div class="q-card" id="card">
-            <span id="motiv-msg" style="color: var(--s); font-weight: 800; font-size: 12px; text-transform: uppercase;">HARİKA GİDİYORSUN!</span>
-            <h2 class="word" id="target">Word</h2>
-            <span class="speaker" onclick="say()">🔊 TELAFFUZU DİNLE</span>
-        </div>
-
-        <div class="grid" id="opts"></div>
     </div>
 
-    <div id="panel" class="panel">
-        <h2 id="msg" style="margin-bottom: 15px;">Mükemmel!</h2>
-        <button class="btn" id="next">DEVAM ET</button>
+    <div id="panel">
+        <h2 id="msg">Harika!</h2>
+        <button class="btn" id="btn-next">DEVAM ET</button>
     </div>
 </div>
 
 <script>
-    const dictionary = [
-        // Friendship
-        {en:"Honest", tr:"Dürüst"}, {en:"Reliable", tr:"Güvenilir"}, {en:"Generous", tr:"Cömert"}, {en:"Stubborn", tr:"İnatçı"},
-        {en:"Back up", tr:"Desteklemek"}, {en:"Count on", tr:"Güvenmek"}, {en:"Get on well", tr:"İyi geçinmek"}, {en:"Buddy", tr:"Kanka"},
-        // Teen Life
-        {en:"Trendy", tr:"Modaya uygun"}, {en:"Unbearable", tr:"Katlanılmaz"}, {en:"Terrific", tr:"Müthiş"}, {en:"Ridiculous", tr:"Saçma"},
-        {en:"Casual", tr:"Günlük"}, {en:"Snob", tr:"Züppe"}, {en:"Impressive", tr:"Etkileyici"}, {en:"Healthy", tr:"Sağlıklı"},
-        // Kitchen
-        {en:"Chop", tr:"Doğramak"}, {en:"Whisk", tr:"Çırpmak"}, {en:"Steam", tr:"Buharda pişirmek"}, {en:"Fry", tr:"Kızartmak"},
-        {en:"Peel", tr:"Soymak"}, {en:"Sour", tr:"Ekşi"}, {en:"Spicy", tr:"Baharatlı"}, {en:"Bitter", tr:"Acı"},
-        // Adventures
-        {en:"Challenging", tr:"Zorlayıcı"}, {en:"Fascinating", tr:"Büyüleyici"}, {en:"Adrenaline seeker", tr:"Adrenalin tutkunu"}, {en:"Risky", tr:"Riskli"},
-        {en:"Paragliding", tr:"Yamaç paraşütü"}, {en:"Caving", tr: "Mağaracılık"}, {en:"Amusing", tr:"Eğlenceli"}, {en:"Boring", tr:"Sıkıcı"},
-        // Ekstra 120 Kelime Havuzu (Örnekler)
-        {en:"Abundant", tr:"Bol"}, {en:"Accurate", tr:"Doğru"}, {en:"Achieve", tr:"Başarmak"}, {en:"Ancient", tr:"Antik"},
-        {en:"Brief", tr:"Kısa"}, {en:"Capable", tr:"Yetenekli"}, {en:"Cautious", tr:"Tedbirli"}, {en:"Common", tr:"Yaygın"},
-        {en:"Decade", tr:"On yıl"}, {en:"Drought", tr:"Kuraklık"}, {en:"Eager", tr:"Hevesli"}, {en:"Endangered", tr:"Nesli tükenmekte olan"},
-        {en:"Frequent", tr:"Sık"}, {en:"Gather", tr:"Toplanmak"}, {en:"Harvest", tr:"Hasat"}, {en:"Invention", tr:"İcat"},
-        {en:"Journey", tr:"Yolculuk"}, {en:"Knowledge", tr:"Bilgi"}, {en:"Launch", tr:"Fırlatmak"}, {en:"Magnificent", tr:"Muhteşem"},
-        {en:"Negotiate", tr:"Müzakere etmek"}, {en:"Obvious", tr:"Açık, net"}, {en:"Poverty", tr:"Yoksulluk"}, {en:"Rare", tr:"Nadir"}
-        // ... (Liste kod içinde 120'ye kadar çoğaltılmıştır)
+    const units = [
+        { id: 1, title: "Friendship", icon: "🤝", minXP: 0, words: [
+            {en:"Honest", tr:"Dürüst"}, {en:"Reliable", tr:"Güvenilir"}, {en:"Generous", tr:"Cömert"}, {en:"Back up", tr:"Desteklemek"}
+        ]},
+        { id: 2, title: "Teen Life", icon: "🎧", minXP: 50, words: [
+            {en:"Trendy", tr:"Modaya Uygun"}, {en:"Unbearable", tr:"Katlanılmaz"}, {en:"Terrific", tr:"Müthiş"}, {en:"Casual", tr:"Günlük"}
+        ]},
+        { id: 3, title: "In The Kitchen", icon: "🍳", minXP: 150, words: [
+            {en:"Chop", tr:"Doğramak"}, {en:"Peel", tr:"Soymak"}, {en:"Sour", tr:"Ekşi"}, {en:"Whisk", tr:"Çırpmak"}
+        ]},
+        { id: 4, title: "On The Phone", icon: "📱", minXP: 300, words: [
+            {en:"Connect", tr:"Bağlanmak"}, {en:"Hang up", tr:"Kapatmak"}, {en:"Memo", tr:"Not"}, {en:"Engaged", tr:"Meşgul"}
+        ]}
     ];
 
-    let user = JSON.parse(localStorage.getItem('miranUser')) || null;
-    let current = 0, xp = 0, streak = 0, quiz = [];
-
-    const leagues = ["BRONZ LİG", "GÜMÜŞ LİG", "ALTIN LİG", "SAFİR LİG", "ŞAMPİYON"];
+    let user = JSON.parse(localStorage.getItem('miranLingoV10')) || { name: "Miran", xp: 0 };
+    let currentUnit = null;
+    let currentWordIdx = 0;
+    let quizSet = [];
 
     function init() {
-        if(!user) {
-            document.getElementById('auth-ui').classList.remove('hidden');
-        } else {
-            xp = user.xp || 0;
-            document.getElementById('display-name').innerText = user.name;
-            document.getElementById('xp').innerText = xp;
-            updateLeague();
-            startQuiz();
+        document.getElementById('display-name').innerText = user.name;
+        document.getElementById('display-xp').innerText = user.xp;
+        renderUnits();
+    }
+
+    function renderUnits() {
+        const list = document.getElementById('unit-list');
+        list.innerHTML = '';
+        units.forEach(u => {
+            const isLocked = user.xp < u.minXP;
+            const div = document.createElement('div');
+            div.className = `unit-card ${isLocked ? 'locked' : ''}`;
+            div.onclick = () => !isLocked && startUnit(u);
+            div.innerHTML = `
+                <div class="unit-icon">${u.icon}</div>
+                <div class="unit-info">
+                    <div class="unit-title">${u.title}</div>
+                    <div class="unit-subtitle">${isLocked ? u.minXP + ' XP Gerekli' : 'Öğrenmeye Hazır'}</div>
+                </div>
+                <div>${isLocked ? '🔒' : '▶️'}</div>
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    function startUnit(unit) {
+        currentUnit = unit;
+        currentWordIdx = 0;
+        quizSet = [...unit.words].sort(() => Math.random() - 0.5);
+        document.getElementById('home-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        loadWord();
+    }
+
+    function loadWord() {
+        if(currentWordIdx >= quizSet.length) {
+            confetti({ particleCount: 150, spread: 70 });
+            alert(`${currentUnit.title} Ünitesini Bitirdin!`);
+            goHome();
+            return;
         }
-    }
-
-    function saveUser() {
-        const name = document.getElementById('name-input').value.trim();
-        if(!name) return alert("Lütfen ismini yaz!");
-        user = { name: name, xp: 0 };
-        localStorage.setItem('miranUser', JSON.stringify(user));
-        location.reload();
-    }
-
-    function resetProgress() {
-        if(confirm("Tüm ilerlemen ve hesabın silinecek, emin misin?")) {
-            localStorage.removeItem('miranUser');
-            location.reload();
-        }
-    }
-
-    function startQuiz() {
-        quiz = [...dictionary].sort(() => Math.random() - 0.5);
-        load();
-    }
-
-    function load() {
-        if(current >= quiz.length) { current = 0; quiz.sort(() => Math.random() - 0.5); }
-        const q = quiz[current];
-        document.getElementById('target').innerText = q.en;
-        document.getElementById('card').classList.remove('shake');
-        say();
+        const q = quizSet[currentWordIdx];
+        document.getElementById('q-word').innerText = q.en;
+        speak();
 
         let opts = [q.tr];
         while(opts.length < 4) {
-            let r = dictionary[Math.floor(Math.random()*dictionary.length)].tr;
+            let r = units[Math.floor(Math.random()*units.length)].words[Math.floor(Math.random()*4)].tr;
             if(!opts.includes(r)) opts.push(r);
         }
         opts.sort(() => Math.random() - 0.5);
 
-        const grid = document.getElementById('opts');
+        const grid = document.getElementById('opt-grid');
         grid.innerHTML = '';
         opts.forEach(o => {
-            const b = document.createElement('button');
-            b.className = 'opt';
-            b.innerText = o;
-            b.onclick = () => check(b, o === q.tr);
-            grid.appendChild(b);
+            const btn = document.createElement('button');
+            btn.className = 'opt';
+            btn.innerText = o;
+            btn.onclick = () => check(btn, o === q.tr);
+            grid.appendChild(btn);
         });
-        document.getElementById('panel').classList.remove('up');
-        document.getElementById('bar').style.width = (current / 20) * 100 + "%"; // Her 20 kelimede bir tur
+        document.getElementById('panel').classList.remove('active');
+        document.getElementById('bar-fill').style.width = (currentWordIdx / quizSet.length) * 100 + "%";
     }
 
     function check(btn, isCorrect) {
@@ -177,37 +182,34 @@
 
         if(isCorrect) {
             btn.classList.add('correct');
-            p.style.background = "#d7ffb8";
-            m.innerText = "Harikasın " + user.name + "! ✨";
+            p.style.backgroundColor = "#d7ffb8";
+            m.innerText = "Mükemmel!";
             m.style.color = "#46a302";
-            streak++; xp += (10 + streak);
-            user.xp = xp;
-            localStorage.setItem('miranUser', JSON.stringify(user));
-            if(streak % 5 === 0) confetti({ particleCount: 100, spread: 70 });
+            user.xp += 15;
+            save();
         } else {
             btn.classList.add('wrong');
-            document.getElementById('card').classList.add('shake');
-            p.style.background = "#ffdfe0";
-            m.innerText = "Doğrusu: " + quiz[current].tr;
+            p.style.backgroundColor = "#ffdfe0";
+            m.innerText = "Doğrusu: " + quizSet[currentWordIdx].tr;
             m.style.color = "#ff4b4b";
-            streak = 0;
         }
-
-        document.getElementById('xp').innerText = xp;
-        document.getElementById('streak').innerText = streak;
-        updateLeague();
-        p.classList.add('up');
-        document.getElementById('next').onclick = () => { current++; load(); };
+        p.classList.add('active');
+        document.getElementById('btn-next').onclick = () => { currentWordIdx++; loadWord(); };
     }
 
-    function updateLeague() {
-        let idx = Math.floor(xp / 500);
-        if(idx > 4) idx = 4;
-        document.getElementById('league-name').innerText = leagues[idx];
+    function goHome() {
+        document.getElementById('game-screen').classList.add('hidden');
+        document.getElementById('home-screen').classList.remove('hidden');
+        document.getElementById('panel').classList.remove('active');
+        init();
     }
 
-    function say() {
-        const u = new SpeechSynthesisUtterance(quiz[current].en);
+    function save() {
+        localStorage.setItem('miranLingoV10', JSON.stringify(user));
+    }
+
+    function speak() {
+        const u = new SpeechSynthesisUtterance(quizSet[currentWordIdx].en);
         u.lang = 'en-US';
         window.speechSynthesis.speak(u);
     }
