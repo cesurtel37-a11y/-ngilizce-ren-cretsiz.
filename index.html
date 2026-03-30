@@ -3,172 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MiranLingo Akademi</title>
+    <title>MiranLingo v12</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
-        :root { --p: #58cc02; --s: #1cb0f6; --r: #ff4b4b; --w: #fff; --t: #4b4b4b; --bg: #f7f8fa; }
+        :root { --p: #58cc02; --s: #1cb0f6; --r: #ff4b4b; --w: #ffffff; --t: #4b4b4b; --bg: #f7f8fa; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Segoe UI', sans-serif; }
-        body { margin: 0; background: var(--bg); display: flex; justify-content: center; height: 100vh; overflow: hidden; }
-        .app { width: 100%; max-width: 414px; height: 100%; display: flex; flex-direction: column; position: relative; }
+        body { margin: 0; background: var(--bg); color: var(--t); overflow: hidden; display: flex; justify-content: center; }
         
-        /* Ana Ekran */
-        #home, #unit-menu, #game-screen { padding: 20px; overflow-y: auto; flex-grow: 1; height: 100%; width: 100%; position: absolute; top:0; left:0; transition: 0.3s; background: var(--bg); }
+        .container { width: 100%; max-width: 414px; height: 100vh; position: relative; background: var(--bg); }
+        .page { position: absolute; inset: 0; padding: 20px; display: none; flex-direction: column; overflow-y: auto; }
+        .active { display: flex; }
+
+        /* UI Elemanları */
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .unit-card { background: var(--w); border: 2px solid #e5e5e5; border-bottom: 6px solid #e5e5e5; border-radius: 20px; padding: 20px; margin-bottom: 15px; cursor: pointer; display: flex; align-items: center; gap: 15px; }
-        .locked { opacity: 0.5; filter: grayscale(1); pointer-events: none; }
+        .xp-pill { background: var(--s); color: white; padding: 5px 15px; border-radius: 20px; font-weight: 900; }
         
-        /* Mod Seçim Menüsü */
-        .mode-btn { background: var(--w); border: 2px solid #e5e5e5; border-bottom: 5px solid #e5e5e5; border-radius: 15px; padding: 25px; margin-bottom: 15px; display: flex; align-items: center; gap: 15px; cursor: pointer; width: 100%; text-align: left; }
-        .mode-icon { font-size: 30px; background: #f0f0f0; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
-        .mode-title { font-weight: 900; color: var(--t); font-size: 18px; }
+        .unit-card { 
+            background: var(--w); border: 2px solid #e5e5e5; border-bottom: 6px solid #e5e5e5;
+            border-radius: 20px; padding: 20px; margin-bottom: 15px; cursor: pointer;
+            display: flex; align-items: center; gap: 15px; transition: 0.2s;
+        }
+        .locked { opacity: 0.5; filter: grayscale(1); cursor: not-allowed; }
 
-        /* Oyun Ekranı */
-        .progress { width: 100%; height: 12px; background: #eee; border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
-        #bar { width: 0%; height: 100%; background: var(--p); transition: 0.4s; }
-        .q-card { background: var(--w); border: 2px solid #eee; border-bottom: 5px solid #eee; border-radius: 20px; padding: 50px 20px; text-align: center; margin-bottom: 20px; }
-        .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .opt-btn { background: var(--w); border: 2px solid #e5e5e5; border-bottom: 4px solid #e5e5e5; border-radius: 15px; padding: 18px 5px; font-weight: bold; cursor: pointer; }
+        .mode-card {
+            background: var(--w); border: 2px solid #e5e5e5; border-bottom: 5px solid #e5e5e5;
+            border-radius: 18px; padding: 20px; margin-bottom: 12px; cursor: pointer;
+            display: flex; align-items: center; gap: 15px; font-weight: 900;
+        }
+
+        /* Oyun Alanı */
+        .progress-bar { width: 100%; height: 12px; background: #eee; border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
+        #fill { width: 0%; height: 100%; background: var(--p); transition: 0.3s; }
         
+        .q-card { 
+            background: var(--w); border: 2px solid #eee; border-bottom: 5px solid #eee;
+            border-radius: 24px; padding: 40px 10px; text-align: center; margin-bottom: 20px;
+        }
+        .q-text { font-size: 36px; font-weight: 900; color: #333; margin: 10px 0; }
+        
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .opt { 
+            background: var(--w); border: 2px solid #e5e5e5; border-bottom: 4px solid #e5e5e5;
+            border-radius: 15px; padding: 18px 5px; font-weight: 800; cursor: pointer;
+        }
+        .correct { background: #d7ffb8 !important; border-color: var(--p) !important; }
+        .wrong { background: #ffdfe0 !important; border-color: var(--r) !important; }
+
         /* Alt Panel */
-        #panel { position: fixed; bottom: -180px; left: 0; right: 0; background: var(--w); padding: 25px; border-top: 3px solid #eee; transition: 0.3s; z-index: 500; text-align: center; }
-        #panel.active { bottom: 0; }
-        .btn-main { background: var(--p); color: white; border: none; padding: 15px; border-radius: 15px; font-weight: 900; width: 100%; cursor: pointer; box-shadow: 0 5px 0 #46a302; }
-
-        .hidden { transform: translateX(100%); opacity: 0; pointer-events: none; }
-        .visible { transform: translateX(0); opacity: 1; }
+        #panel { 
+            position: fixed; bottom: -200px; left: 0; right: 0; background: var(--w);
+            padding: 25px; border-top: 3px solid #eee; transition: 0.3s; z-index: 1000; text-align: center;
+        }
+        #panel.show { bottom: 0; }
+        .main-btn { 
+            background: var(--p); color: white; border: none; padding: 15px;
+            border-radius: 15px; font-weight: 900; width: 100%; cursor: pointer;
+            box-shadow: 0 5px 0 #46a302; font-size: 18px;
+        }
     </style>
 </head>
 <body>
 
-<div class="app">
-    <div id="home" class="visible">
+<div class="container">
+    <div id="home" class="page active">
         <div class="header">
-            <h1 style="color:var(--p); margin:0;">MiranLingo</h1>
-            <div style="font-weight:900; color:var(--s);">💎 <span id="xp">0</span></div>
+            <h1 style="color: var(--p); margin: 0;">MiranLingo</h1>
+            <div class="xp-pill">💎 <span id="xp-val">0</span></div>
         </div>
         <div id="unit-list"></div>
     </div>
 
-    <div id="unit-menu" class="hidden">
+    <div id="mode-select" class="page">
         <div onclick="showPage('home')" style="cursor:pointer; font-size:24px; margin-bottom:20px;">✕</div>
-        <h2 id="menu-title" style="margin-bottom:30px;">Ünite Detayı</h2>
-        <div class="mode-btn" onclick="startMod('learn')">
-            <div class="mode-icon">📖</div>
-            <div class="mode-title">Kelime Öğren</div>
-        </div>
-        <div class="mode-btn" onclick="startMod('quiz')">
-            <div class="mode-icon">📝</div>
-            <div class="mode-title">Soru Çöz</div>
-        </div>
-        <div class="mode-btn" onclick="startMod('listen')">
-            <div class="mode-icon">🎧</div>
-            <div class="mode-title">Dinleyerek Cevapla</div>
-        </div>
+        <h2 id="unit-title">Ünite</h2>
+        <div class="mode-card" onclick="startMod('learn')"><span>📖</span> Kelime Öğren</div>
+        <div class="mode-card" onclick="startMod('quiz')"><span>📝</span> Soru Çöz</div>
+        <div class="mode-card" onclick="startMod('listen')"><span>🎧</span> Dinle ve Bul</div>
     </div>
 
-    <div id="game-screen" class="hidden">
-        <div onclick="showPage('unit-menu')" style="cursor:pointer; font-size:24px; margin-bottom:10px;">✕</div>
-        <div class="progress"><div id="bar"></div></div>
+    <div id="game" class="page">
+        <div class="progress-bar"><div id="fill"></div></div>
         <div class="q-card">
-            <p id="mod-label" style="color:var(--s); font-weight:bold;"></p>
-            <h2 id="q-text" style="font-size:36px;">Word</h2>
-            <div id="listen-hint" style="font-size:14px; color:var(--s); cursor:pointer;" onclick="speakCurrent()">🔊 Tekrar Dinle</div>
+            <p id="mod-name" style="color:var(--s); font-weight:900; margin:0;"></p>
+            <h2 class="q-text" id="q-val">Word</h2>
+            <div id="speaker" onclick="say()" style="cursor:pointer; color:var(--s); font-weight:bold; display:none;">🔊 Dinle</div>
         </div>
-        <div class="opts" id="opt-grid"></div>
+        <div class="options" id="opt-grid"></div>
     </div>
 
     <div id="panel">
         <h3 id="panel-msg">Harika!</h3>
-        <button class="btn-main" id="btn-next">DEVAM ET</button>
+        <button class="main-btn" id="next-btn">DEVAM ET</button>
     </div>
 </div>
 
 <script>
     const data = [
-        { id:1, title:"Mutfakta (Kitchen)", icon:"🍳", reqXP:0, words:[{en:"Chop", tr:"Doğramak"}, {en:"Peel", tr:"Soymak"}, {en:"Whisk", tr:"Çırpmak"}, {en:"Sour", tr:"Ekşi"}] },
-        { id:2, title:"Telefonda (Phone)", icon:"📱", reqXP:50, words:[{en:"Connect", tr:"Bağlanmak"}, {en:"Engaged", tr:"Meşgul"}, {en:"Hang up", tr:"Kapatmak"}, {en:"Memo", tr:"Not"}] },
-        { id:3, title:"İnternet (Internet)", icon:"🌐", reqXP:100, words:[{en:"Upload", tr:"Yüklemek"}, {en:"Account", tr:"Hesap"}, {en:"Confirm", tr:"Onaylamak"}, {en:"Log in", tr:"Giriş yapmak"}] }
+        { id:1, name:"Friendship", icon:"🤝", xp:0, words:[{e:"Honest",t:"Dürüst"},{e:"Generous",t:"Cömert"},{e:"Reliable",t:"Güvenilir"},{e:"Stubborn",t:"İnatçı"}] },
+        { id:2, name:"Teen Life", icon:"🎧", xp:100, words:[{e:"Trendy",t:"Modaya Uygun"},{e:"Casual",t:"Günlük"},{e:"Unbearable",t:"Katlanılmaz"},{e:"Terrific",t:"Müthiş"}] },
+        { id:3, name:"Kitchen", icon:"🍳", xp:250, words:[{e:"Chop",t:"Doğramak"},{e:"Peel",t:"Soymak"},{e:"Whisk",t:"Çırpmak"},{e:"Sour",t:"Ekşi"}] }
     ];
 
-    let user = JSON.parse(localStorage.getItem('miranV11')) || { xp:0, finishedUnits:[] };
-    let activeUnit = null, activeMod = '', currentIdx = 0, quizSet = [];
+    let user = JSON.parse(localStorage.getItem('miranV12')) || { xp: 0 };
+    let activeUnit = null, activeMod = '', current = 0, quizWords = [];
 
     function init() {
-        document.getElementById('xp').innerText = user.xp;
-        renderUnits();
-    }
-
-    function renderUnits() {
+        document.getElementById('xp-val').innerText = user.xp;
         const list = document.getElementById('unit-list');
         list.innerHTML = '';
         data.forEach(u => {
-            const isLocked = user.xp < u.reqXP;
-            const card = document.createElement('div');
-            card.className = `unit-card ${isLocked ? 'locked' : ''}`;
-            card.onclick = () => { activeUnit = u; showPage('unit-menu'); document.getElementById('menu-title').innerText = u.title; };
-            card.innerHTML = `<div style="font-size:30px;">${u.icon}</div><div style="flex:1"><b>${u.title}</b><br><small>${isLocked ? u.reqXP+' XP Gerekli' : 'Hazır!'}</small></div><div>${isLocked?'🔒':'▶️'}</div>`;
-            list.appendChild(card);
+            const locked = user.xp < u.xp;
+            const div = document.createElement('div');
+            div.className = `unit-card ${locked ? 'locked' : ''}`;
+            div.onclick = () => { if(!locked) { activeUnit = u; showPage('mode-select'); document.getElementById('unit-title').innerText = u.name; } };
+            div.innerHTML = `<div style="font-size:30px;">${u.icon}</div><div style="flex:1"><b>${u.name}</b><br><small>${locked ? u.xp+' XP Gerekli' : 'Hazır'}</small></div><div>${locked?'🔒':'▶️'}</div>`;
+            list.appendChild(div);
         });
     }
 
     function showPage(id) {
-        ['home', 'unit-menu', 'game-screen'].forEach(p => document.getElementById(p).classList.add('hidden'));
-        document.getElementById(id).classList.remove('hidden');
-        document.getElementById(id).classList.add('visible');
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
     }
 
     function startMod(mod) {
-        activeMod = mod;
-        currentIdx = 0;
-        quizSet = [...activeUnit.words].sort(() => Math.random() - 0.5);
-        showPage('game-screen');
-        loadChallenge();
+        activeMod = mod; current = 0;
+        quizWords = [...activeUnit.words].sort(() => Math.random() - 0.5);
+        showPage('game');
+        load();
     }
 
-    function loadChallenge() {
-        const q = quizSet[currentIdx];
-        const qText = document.getElementById('q-text');
+    function load() {
+        if(current >= quizWords.length) { confetti({particleCount:150}); showPage('home'); init(); return; }
+        
+        const q = quizWords[current];
         const grid = document.getElementById('opt-grid');
-        const label = document.getElementById('mod-label');
         grid.innerHTML = '';
-        document.getElementById('panel').classList.remove('active');
-        document.getElementById('bar').style.width = (currentIdx / quizSet.length) * 100 + "%";
+        document.getElementById('panel').classList.remove('show');
+        document.getElementById('fill').style.width = (current / quizWords.length) * 100 + "%";
+        document.getElementById('speaker').style.display = (activeMod === 'learn' || activeMod === 'listen') ? 'block' : 'none';
 
         if(activeMod === 'learn') {
-            label.innerText = "KELİME ÖĞREN"; qText.innerText = q.en + " = " + q.tr;
-            const btn = document.createElement('button'); btn.className = 'btn-main'; btn.innerText = "ÖĞRENDİM!"; 
-            btn.onclick = () => { currentIdx++; currentIdx < quizSet.length ? loadChallenge() : finishChallenge(); };
-            grid.appendChild(btn); speak(q.en);
+            document.getElementById('mod-name').innerText = "ÖĞRENİYORUZ";
+            document.getElementById('q-val').innerText = q.e + " = " + q.t;
+            const b = document.createElement('button'); b.className = 'main-btn'; b.innerText = "SIRADAKİ";
+            b.onclick = () => { current++; load(); }; grid.appendChild(b); say();
         } else {
-            label.innerText = activeMod === 'quiz' ? "SORU ÇÖZ" : "DİNLE VE BUL";
-            qText.innerText = activeMod === 'quiz' ? q.en : "???";
-            if(activeMod === 'listen') speak(q.en);
-            
-            let opts = [q.tr].concat(data[0].words.map(w=>w.tr).filter(t=>t!==q.tr).slice(0,3));
+            document.getElementById('mod-name').innerText = activeMod === 'quiz' ? "TEST ÇÖZ" : "DİNLE VE BUL";
+            document.getElementById('q-val').innerText = activeMod === 'quiz' ? q.e : "???";
+            if(activeMod === 'listen') say();
+
+            let opts = [q.t].concat(data[0].words.map(w=>w.t).filter(t=>t!==q.t).slice(0,3));
             opts.sort(()=>Math.random()-0.5).forEach(o => {
-                const b = document.createElement('button'); b.className = 'opt-btn'; b.innerText = o;
-                b.onclick = () => check(b, o === q.tr); grid.appendChild(b);
+                const b = document.createElement('button'); b.className = 'opt'; b.innerText = o;
+                b.onclick = () => check(b, o === q.t); grid.appendChild(b);
             });
         }
     }
 
     function check(btn, isCorrect) {
-        document.querySelectorAll('.opt-btn').forEach(b => b.style.pointerEvents = 'none');
+        document.querySelectorAll('.opt').forEach(b => b.style.pointerEvents = 'none');
         const p = document.getElementById('panel');
-        if(isCorrect) { btn.style.background = "#d7ffb8"; user.xp += 10; save(); } 
-        else { btn.style.background = "#ffdfe0"; }
-        p.classList.add('active');
-        document.getElementById('btn-next').onclick = () => { currentIdx++; currentIdx < quizSet.length ? loadChallenge() : finishChallenge(); };
+        if(isCorrect) { btn.classList.add('correct'); user.xp += 15; localStorage.setItem('miranV12', JSON.stringify(user)); }
+        else { btn.classList.add('wrong'); }
+        p.classList.add('show');
+        document.getElementById('next-btn').onclick = () => { current++; load(); };
     }
 
-    function finishChallenge() {
-        confetti({ particleCount: 100 });
-        showPage('unit-menu');
+    function say() {
+        const u = new SpeechSynthesisUtterance(quizWords[current].e);
+        u.lang = 'en-US'; window.speechSynthesis.speak(u);
     }
-
-    function save() { localStorage.setItem('miranV11', JSON.stringify(user)); document.getElementById('xp').innerText = user.xp; }
-    function speak(t) { const u = new SpeechSynthesisUtterance(t); u.lang = 'en-US'; window.speechSynthesis.speak(u); }
-    function speakCurrent() { speak(quizSet[currentIdx].en); }
 
     init();
 </script>
